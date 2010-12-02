@@ -1,0 +1,15 @@
+## $Id: slurm_drmaa.conf.example 300 2010-09-18 23:43:21Z mmatloka $
+## slurm_drmaa.conf.example - Sample slurm_drmaa configuration file.
+
+## Cache job state for number of seconds.  If set to positive integer
+## `drmaa_job_ps()` returns remembered job state without communicating with
+## DRM for `cache_job_state` seconds since last update.  By default it is
+## 0 meaning no caching will be performed.
+#cache_job_state: 5,
+
+## Mapping of `drmaa_job_category` values to native specification.
+job_categories: {
+  #default: "--share",
+  exclusive: "--exclusive",
+},
+

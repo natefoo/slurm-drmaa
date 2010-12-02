@@ -1,0 +1,244 @@
+===================================================================
+PSNC DRMAA for Simple Linux Utility for Resource Management (SLURM)
+===================================================================
+
+:Author:        Michal Matloka <michal.matloka@student.put.poznan.pl>, Mariusz Mamonski <mamonski@man.poznan.pl>
+:Organization:  Poznan Supercomputing and Networking Center
+:Contact:       Mariusz Mamonski <mamonski@man.poznan.pl>, Michal Matloka <michal.matloka@student.put.poznan.pl>
+:Date:          $Date: 2010-10-01 15:14:55 +0200 (Pt, 01 paź 2010) $
+:Version:       1.0.0
+:Revision:      $Revision: 351 $
+:Copyright:     Copyright (C) 2010  Poznan Supercomputing and Networking Center
+
+:Abstract:  This document describes installation, configuration and usage
+  of PSNC DRMAA for Simple Linux Utility for Resource Management (SLURM).
+
+.. meta::
+  :http-equiv=Content-Language: en
+  :http-equiv=Content-Type: application/xhtml+xml; charset=UTF-8
+  :description lang=en: Distributed Resource Management Application API 1.0 implementation for Simple Linux Utility for Resource Management (SLURM)
+  :keywords: DRMAA, Distributed Resource Management Application API, Simple Linux Utility for Resource Management, SLURM, Poznan Supercomputing and Networking Center
+
+.. contents::
+
+.. default-role:: literal
+
+
+Introduction
+============
+
+PSNC DRMAA for `Simple Linux Utility for Resource Management (SLURM)`_ is an implementation of `Open Grid Forum`_ DRMAA_
+1.0 (Distributed Resource Management Application API) specification_
+for submission and control of jobs to `Simple Linux Utility for Resource Management (SLURM)`_.  Using DRMAA,
+grid applications builders, portal developers and ISVs can use the same
+high-level API to link their software with different cluster/resource
+management systems.
+
+This software also enables the integration of `SMOA Computing`_ with the
+underlying SLURM system for remote multi-user job submission and control
+over Web Services.
+
+
+Installation
+============
+
+To compile and install the library just go to main source directory
+and type::
+
+  $ ./configure [options] && make
+  $ sudo make install
+
+The library was tested with Simple Linux Utility for Resource Management version 2.1.13.
+If you encountered any problems using the library on the different systems, please use 
+the contact e-mails for reporting the problem.
+
+Notable `./configure` script options:
+
+  `--with-slurm-inc` SLURM_INCLUDE_PATH
+    Path to SLURM header files (i.e. directory containing `slurm/slurm.h` ). By default the library tries 
+    to guess the `SLURM_INCLUDE_PATH` and `SLURM_LIBRARY_PATH` based on location
+    of the `srun` executable.
+
+  `--with-slurm-lib` SLURM_LIBRARY_PATH
+    Path to SLURM libraries (i.e. directory containing `libslurm.a` ).
+
+  `--prefix` INSTALLATION_DIRECTORY
+    Root directory where PSNC DRMAA for SLURM shall be installed.
+    When not given library is installed in `/usr/local`.
+
+  `--enable-debug`
+    Compiles library with debugging enabled (with debugging symbols not
+    stripped, without optimizations, and with many log messages enabled).
+    Useful when you are to debug DRMAA enabled application
+    or investigate problems with DRMAA library itself.
+
+There are no unusual requirements for basic usage of library: ANSI C
+compiler and standard make program should suffice.  If you have taken
+sources directly from SVN repository or wish to run test-suite you would
+need additional `developer tools`_.  For further information regarding
+GNU build system see the INSTALL file.
+
+
+Configuration
+=============
+
+During DRMAA session initialization (`drmaa_init`) library tries to
+read its configuration parameters from locations: `/etc/slurm_drmaa.conf`,
+`~/.slurm_drmaa.conf` and from file given in `SLURM_DRMAA_CONF` environment
+variable (if set to non-empty string).  If multiple configuration
+sources are present then all configurations are merged with values
+from user-defined files taking precedence (in following order:
+`$SLURM_DRMAA_CONF`, `~/.slurm_drmaa.conf`, `/etc/slurm_drmaa.conf`).
+
+Currently recognized configuration parameters are:
+
+  cache_job_state
+    According to DRMAA specification every `drmaa_job_ps()` call should
+    query DRM system for job state.  With this option one may optimize
+    communication with DRM.  If set to positive integer `drmaa_job_ps()`
+    returns remembered job state without communicating with DRM for
+    `cache_job_state` seconds since last update.  By default library
+    conforms to specification (no caching will be performed).
+
+    Type: integer, default: 0
+
+  job_categories
+    Dictionary of job categories.  It's keys are job categories names
+    mapped to `native specification`_ strings.  Attributes set by job
+    category can be overridden by corresponding DRMAA attributes or
+    native specification.  Special category name `default` is used when
+    `drmaa_job_category` job attribute was not set.
+
+    Type: dictionary with string values, default: empty dictionary
+	
+
+Configuration file syntax
+-------------------------
+
+Configuration file is in form a dictionary.
+Dictionary is set of zero or more key-value pairs.
+Key is a string while value could be a string, an integer
+or another dictionary.
+::
+
+  configuration: dictionary | dictionary_body
+  dictionary: '{' dictionary_body '}'
+  dictionary_body: (string ':' value ',')*
+  value: integer | string | dictionary
+  string: unquoted-string | single-quoted-string | double-quoted-string
+  unquoted-string: [^ \t\n\r:,0-9][^ \t\n\r:,]*
+  single-quoted-string: '[^']*'
+  double-quoted-string: "[^"]*"
+  integer: [0-9]+
+
+
+Native specification
+====================
+
+DRMAA interface allows to pass DRM dependent job submission options.
+Those options may be specified directly by setting `drmaa_native_specification` job
+template attribute or indirectly by the `drmaa_job_category` job template attribute. 
+The legal format of the native options looks like::
+
+  -A My_job_name -s -N 1=10
+
+.. table::
+
+  ============================= =======================================================================================================================
+  Native specification          Description
+  ============================= =======================================================================================================================
+  `-A, --account=`\name         Charge job to specified accounts
+  `--acctg-freq`                Define  the  job accounting sampling interval
+  `--comment`                   An arbitrary comment
+  `-C, --constraint=`\list      Specify a list of constraints
+  `--contiguous`                If  set,  then  the  allocated nodes must form a contiguous set
+  `--exclusive`                 Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled
+  `--mem=`\MB                   Minimum amount of real memory
+  `--mem-per-cpu=`\MB           Maximum mount of real memory per allocated cpu required by a job
+  `--mincpus=`\n                Minimum number of logical processors (threads) per node
+  `-N, --nodes=`\N              Number of nodes on which to run (N = min[-max])
+  `--ntasks-per-node=`\n        Number of tasks to invoke on each node    
+  `-p, --partition=`\partition  Partition requested
+  `--qos=`\qos                  Quality of Serice
+  `--requeue`                   If set, permit the job to be requeued
+  `--reservation=`\name         Allocate resources from named reservation
+  `-s, --share`                 Job allocation  can  share  nodes with other running jobs
+  `-w, --nodelist=`\hosts       Request a specific list of hosts
+  ============================= =======================================================================================================================
+  
+Description of each parameter can be found in `man sbatch`.
+
+Release notes
+=============
+ * 1.0.0 - first public release
+
+Known bugs and limitations
+--------------------------
+
+Library covers all `DRMAA 1.0 specification`_ with exceptions listed
+below.  It was successfully tested with `Simple Linux Utility for Resource Management (SLURM)`_ 2.1.13 on Linux and passes 44/44 tests of the `official DRMAA test-suite`_ (running as SLURM administrator).
+Using regular user account SLURM DRMAA passes 40/44 tests of the official DRMAA test-suite. 
+
+Known limitations:
+
+ * `drmaa_control` options `DRMAA_CONTROL_HOLD`, `DRMAA_CONTROL_SUSPEND`, `DRMAA_CONTROL_RELEASE`, `DRMAA_CONTROL_RESUME` are only available for users being SLURM administrators
+ * `drmaa_wct_slimit` not implemented
+ * optional attributes `drmaa_deadline_time`, `drmaa_duration_hlimit`, `drmaa_duration_slimit`, `drmaa_transfer_files` not implemented
+
+
+Authors
+-------
+
+The library was developed by:
+
+ * Michal Matloka <michal.matloka@student.put.poznan.pl> - core implementation
+
+This library relies heavily on the *Fedstage DRMAA utils* code developed by:
+
+ * Lukasz Ciesnik <lukasz.ciesnik@gmail.com>.
+
+Developer tools
+---------------
+Although not needed for library user the following tools may be required
+if you intend to develop PSNC DRMAA for SLURM:
+
+ * GNU autotools (autoconf, automake, libtool),
+ * Bison_ parser generator,
+ * Docutils_ for processing this `README`,
+ * LaTeX_ for creating documentation in PDF format,
+ * Doxygen_ for generating source code documentation.
+
+.. _Bison:     http://www.gnu.org/software/bison/
+.. _Docutils:  http://docutils.sourceforge.net/
+.. _LaTeX:     http://www.latex-project.org/
+.. _Doxygen:   http://www.stack.nl/~dimitri/doxygen/
+.. _DRMAA: http://www.drmaa.org/
+.. _Open Grid Forum: http://www.gridforum.org/
+.. _DRMAA 1.0 specification: http://www.ogf.org/documents/GFD.133.pdf
+.. _specification: http://www.ogf.org/documents/GFD.133.pdf
+.. _Official DRMAA test-suite: http://drmaa.org/testsuite.php
+.. _SMOA Computing: http://larix.man.poznan.pl/wiki/SMOA_Computing
+.. _Simple Linux Utility for Resource Management (SLURM): https://computing.llnl.gov/linux/slurm/
+
+
+License
+=======
+
+Copyright (C) 2009-2010  Poznan Supercomputing and Networking Center 
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+.. vim700: spell spelllang=en
+.. vim: ft=rst
+.. vim: ts=2 sw=2 et
