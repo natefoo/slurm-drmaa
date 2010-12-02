@@ -1,0 +1,3 @@
+[submodule "drmaa_utils"]
+	path = drmaa_utils
+	url = https://github.com/natefoo/drmaa-utils/
