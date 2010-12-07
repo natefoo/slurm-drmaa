@@ -1,4 +1,4 @@
-# $Id: ax_slurm.m4 208 2010-05-20 10:24:54Z mmatloka $
+# $Id$
 #
 # SYNOPSIS
 #

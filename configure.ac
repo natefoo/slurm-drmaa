@@ -1,6 +1,6 @@
 AC_INIT([PSNC DRMAA for SLURM], [1.0.0], [mamonski@man.poznan.pl], [slurm_drmaa])
 AC_PREREQ(2.59)
-AC_REVISION([$Id: configure.ac 2694 2009-09-12 17:17:35Z mmamonski $])
+AC_REVISION([$Id$])
 AC_COPYRIGHT([
 PSNC DRMAA for SLURM
 Copyright (C) 2010 Poznan Supercomputing and Networking Center

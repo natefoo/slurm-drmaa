@@ -1,4 +1,4 @@
-# $Id: Makefile.am 227 2010-05-25 13:14:20Z mamonski $
+# $Id$
 #
 # PSNC DRMAA for LoadLeveler
 # Copyright (C) 2010 Poznan Supercomputing and Networking Center

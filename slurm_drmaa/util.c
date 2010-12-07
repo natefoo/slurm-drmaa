@@ -1,4 +1,4 @@
-/* $Id: util.c 351 2010-10-01 13:14:55Z mamonski $ */
+/* $Id$ */
 /*
  * PSNC DRMAA for SLURM
  * Copyright (C) 2010 Poznan Supercomputing and Networking Center
@@ -31,7 +31,7 @@ static char rcsid[]
 #	ifdef __GNUC__
 		__attribute__ ((unused))
 #	endif
-	= "$Id: util.c 351 2010-10-01 13:14:55Z mamonski $";
+	= "$Id$";
 #endif
 
 unsigned

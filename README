@@ -7,7 +7,7 @@ PSNC DRMAA for Simple Linux Utility for Resource Management (SLURM)
 :Contact:       Mariusz Mamonski <mamonski@man.poznan.pl>, Michal Matloka <michal.matloka@student.put.poznan.pl>
 :Date:          $Date: 2010-10-01 15:14:55 +0200 (Pt, 01 paź 2010) $
 :Version:       1.0.0
-:Revision:      $Revision: 351 $
+:Revision:      $Revision$
 :Copyright:     Copyright (C) 2010  Poznan Supercomputing and Networking Center
 
 :Abstract:  This document describes installation, configuration and usage

@@ -1,4 +1,4 @@
-/* $Id: util.h 349 2010-09-30 12:20:44Z mmatloka $ */
+/* $Id$ */
 /*
  * PSNC DRMAA for SLURM
  * Copyright (C) 2010 Poznan Supercomputing and Networking Center

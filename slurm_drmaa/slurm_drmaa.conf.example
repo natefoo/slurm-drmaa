@@ -1,4 +1,4 @@
-## $Id: slurm_drmaa.conf.example 300 2010-09-18 23:43:21Z mmatloka $
+## $Id$
 ## slurm_drmaa.conf.example - Sample slurm_drmaa configuration file.
 
 ## Cache job state for number of seconds.  If set to positive integer

@@ -1,4 +1,4 @@
-# $Id: ax_gcc_warnings.m4 92 2010-04-08 15:40:49Z mamonski $
+# $Id$
 #
 # SYNOPSIS
 #
