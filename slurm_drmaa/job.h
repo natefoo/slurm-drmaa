@@ -1,4 +1,4 @@
-/* $Id: job.h 351 2010-10-01 13:14:55Z mamonski $ */
+/* $Id$ */
 /*
  * PSNC DRMAA for SLURM
  * Copyright (C) 2010 Poznan Supercomputing and Networking Center
