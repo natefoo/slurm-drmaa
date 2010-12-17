@@ -39,6 +39,7 @@ struct slurmdrmaa_job_s {
 	
 	/* job priority before hold */
 	uint32_t old_priority;
+	bool user_suspended;
 };
 
 void slurmdrmaa_job_create_req(fsd_drmaa_session_t *session,const fsd_template_t *jt,fsd_environ_t **envp, job_desc_msg_t * job_desc,	int n_job );

@@ -180,7 +180,6 @@ fi
 AC_CONFIG_FILES([
 	Makefile
 	slurm_drmaa/Makefile
-	doc/Makefile
 ])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SUBDIRS([drmaa_utils])
