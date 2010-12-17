@@ -53,6 +53,7 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 				if(slurm_suspend(fsd_atoi(self->job_id)) == -1) {
 					fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_suspend error: %s,job_id: %s",slurm_strerror(slurm_get_errno()),self->job_id);
 				}
+				slurm_self->user_suspended = true;
 				break;
 			case DRMAA_CONTROL_HOLD:
 				/* change priority to 0*/
@@ -68,6 +69,7 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 				if(slurm_resume(fsd_atoi(self->job_id)) == -1) {
 					fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_resume error: %s,job_id: %s",slurm_strerror(slurm_get_errno()),self->job_id);
 				}
+				slurm_self->user_suspended = false;
 				break;
 			case DRMAA_CONTROL_RELEASE:
 			  /* change priority back*/
@@ -105,6 +107,7 @@ static void
 slurmdrmaa_job_update_status( fsd_job_t *self )
 {
 	job_info_msg_t *job_info = NULL;
+	slurmdrmaa_job_t * slurm_self = (slurmdrmaa_job_t *) self;
 	fsd_log_enter(( "({job_id=%s})", self->job_id ));
 
 	fsd_mutex_lock( &self->session->drm_connection_mutex );
@@ -166,7 +169,10 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 				self->state = DRMAA_PS_RUNNING;
 				break;
 			case JOB_SUSPENDED:
-				self->state = DRMAA_PS_SYSTEM_SUSPENDED; /* assume SYSTEM - suspendig jobs is administrator only */
+				if(slurm_self->user_suspended == true)
+					self->state = DRMAA_PS_USER_SUSPENDED;
+				else
+					self->state = DRMAA_PS_SYSTEM_SUSPENDED; /* assume SYSTEM - suspendig jobs is administrator only */
 				break;
 			case JOB_COMPLETE:
 				self->state = DRMAA_PS_DONE;
@@ -224,7 +230,7 @@ slurmdrmaa_job_new( char *job_id )
 	self->super.control = slurmdrmaa_job_control;
 	self->super.update_status = slurmdrmaa_job_update_status;
 	self->old_priority = UINT32_MAX;
-
+	self->user_suspended = true;
 	return (fsd_job_t*)self;
 }
 
