@@ -1,7 +1,7 @@
 # $Id$
 #
 # PSNC DRMAA for LoadLeveler
-# Copyright (C) 2010 Poznan Supercomputing and Networking Center
+# Copyright (C) 2011 Poznan Supercomputing and Networking Center
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
