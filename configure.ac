@@ -3,7 +3,7 @@ AC_PREREQ(2.59)
 AC_REVISION([$Id$])
 AC_COPYRIGHT([
 PSNC DRMAA for SLURM
-Copyright (C) 2010 Poznan Supercomputing and Networking Center
+Copyright (C) 2011 Poznan Supercomputing and Networking Center
 
 
 This program is free software: you can redistribute it and/or modify
@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SLURM_DRMAA_MAJOR=1
 SLURM_DRMAA_MINOR=0
-SLURM_DRMAA_MICRO=0
-SLURM_DRMAA_VERSION_INFO=1:0:0
+SLURM_DRMAA_MICRO=1
+SLURM_DRMAA_VERSION_INFO=1:0:1
 AC_SUBST([SLURM_DRMAA_MAJOR])
 AC_SUBST([SLURM_DRMAA_MINOR])
 AC_SUBST([SLURM_DRMAA_MICRO])

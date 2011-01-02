@@ -1,7 +1,7 @@
 /* $Id$ */
 /*
  * PSNC DRMAA for SLURM
- * Copyright (C) 2010 Poznan Supercomputing and Networking Center
+ * Copyright (C) 2011 Poznan Supercomputing and Networking Center
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 				slurm_self->old_priority = job_desc.priority;
 				job_desc.job_id = atoi(self->job_id);
 				job_desc.priority = 0;
+				job_desc.alloc_sid = 0;
 				if(slurm_update_job(&job_desc) == -1) {
 					fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_update_job error: %s,job_id: %s",slurm_strerror(slurm_get_errno()),self->job_id);
 				}
@@ -125,38 +126,57 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 			case JOB_PENDING:
 				switch(job_info->job_array[0].state_reason)
 				{
-					case WAIT_NO_REASON:
-					case WAIT_PRIORITY:
-					case WAIT_DEPENDENCY:
-					case WAIT_RESOURCES:
-					case WAIT_PART_NODE_LIMIT: 
-					case WAIT_PART_TIME_LIMIT: 
+					case WAIT_NO_REASON:   /* not set or job not pending */
+					case WAIT_PRIORITY:    /* higher priority jobs exist */
+					case WAIT_DEPENDENCY:  /* dependent job has not completed */
+					case WAIT_RESOURCES:   /* required resources not available */
+					case WAIT_PART_NODE_LIMIT:   /* request exceeds partition node limit */
+					case WAIT_PART_TIME_LIMIT:   /* request exceeds partition time limit */
+					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 					case WAIT_PART_STATE: 
+					#endif
+					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
+					case WAIT_PART_DOWN:   /* requested partition is down */
+					case WAIT_PART_INACTIVE:  /* requested partition is inactive */
+					#endif
 						self->state = DRMAA_PS_QUEUED_ACTIVE;
 						break;
-					case WAIT_HELD:
+					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
+					case WAIT_HELD_USER:   /* job is held by user */
+					#endif
 						self->state = DRMAA_PS_USER_ON_HOLD;
 						break;
-					case WAIT_TIME:
-					case WAIT_LICENSES:
-					case WAIT_ASSOC_JOB_LIMIT:
-					case WAIT_ASSOC_RESOURCE_LIMIT: 
-					case WAIT_ASSOC_TIME_LIMIT:
-					case WAIT_RESERVATION: 
-					case WAIT_NODE_NOT_AVAIL:
+					case WAIT_HELD:  /* job is held by administrator */
+						self->state = DRMAA_PS_SYSTEM_ON_HOLD;
+						break;
+					case WAIT_TIME:  /* job waiting for specific begin time */
+					case WAIT_LICENSES:  /* job is waiting for licenses */
+					case WAIT_ASSOC_JOB_LIMIT:  /* user/bank job limit reached */
+					case WAIT_ASSOC_RESOURCE_LIMIT:  /* user/bank resource limit reached */
+					case WAIT_ASSOC_TIME_LIMIT:  /* user/bank time limit reached */
+					case WAIT_RESERVATION:    /* reservation not available */
+					case WAIT_NODE_NOT_AVAIL:  /* required node is DOWN or DRAINED */
+					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 					case WAIT_TBD1:
+					#endif					
 					case WAIT_TBD2:
 						self->state = DRMAA_PS_QUEUED_ACTIVE;
 						break;
-					case FAIL_DOWN_PARTITION:
-					case FAIL_DOWN_NODE:
-					case FAIL_BAD_CONSTRAINTS:
-					case FAIL_SYSTEM:
-					case FAIL_LAUNCH:
-					case FAIL_EXIT_CODE:
-					case FAIL_TIMEOUT:
-					case FAIL_INACTIVE_LIMIT:
+					case FAIL_DOWN_PARTITION:  /* partition for job is DOWN */
+					case FAIL_DOWN_NODE:       /* some node in the allocation failed */
+					case FAIL_BAD_CONSTRAINTS: /* constraints can not be satisfied */
+					case FAIL_SYSTEM:          /* slurm system failure */
+					case FAIL_LAUNCH:          /* unable to launch job */
+					case FAIL_EXIT_CODE:       /* exit code was non-zero */
+					case FAIL_TIMEOUT:         /* reached end of time limit */
+					case FAIL_INACTIVE_LIMIT:  /* reached slurm InactiveLimit */
+					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 					case FAIL_BANK_ACCOUNT:
+					#else
+					case FAIL_ACCOUNT:         /* invalid account */
+					#endif
+					case FAIL_QOS:             /* invalid QOS */
+					case WAIT_QOS_THRES:       /* required QOS threshold has been breached */
 						self->state = DRMAA_PS_FAILED;
 						break;
 					default:

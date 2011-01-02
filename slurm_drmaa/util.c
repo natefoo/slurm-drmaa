@@ -1,7 +1,7 @@
 /* $Id$ */
 /*
  * PSNC DRMAA for SLURM
- * Copyright (C) 2010 Poznan Supercomputing and Networking Center
+ * Copyright (C) 2011 Poznan Supercomputing and Networking Center
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -174,26 +174,45 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			job_desc->shared = 0;
 			break;
 		case SLURM_NATIVE_MEM:
+		#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 			if(job_desc->job_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->job_min_memory) {
 				fsd_log_debug(("# job_min_memory = %s",value));
 				job_desc->job_min_memory = fsd_atoi(value);
 			}
-			else {
+		#else
+			if(job_desc->pn_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->pn_min_memory) {
+				fsd_log_debug(("# pn_min_memory = %s",value));
+				job_desc->pn_min_memory = fsd_atoi(value);
+			}
+		#endif
+			else { 
 				fsd_log_debug(("mem value defined lower or equal to mem-per-cpu or value defined before"));
 			}
 			break;
 		case SLURM_NATIVE_MEM_PER_CPU:
+		#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 			if(job_desc->job_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->job_min_memory) {
 				fsd_log_debug(("# job_min_memory = %s",value));
 				job_desc->job_min_memory = fsd_atoi(value);
 			}
-			else {
+		#else
+			if(job_desc->pn_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->pn_min_memory) {
+				fsd_log_debug(("# pn_min_memory = %s",value));
+				job_desc->pn_min_memory = fsd_atoi(value);
+			}
+		#endif
+			else { 
 				fsd_log_debug(("mem-per-cpu value defined lower or equal to mem or value defined before"));
 			}
 			break;
 		case SLURM_NATIVE_MINCPUS:
+		#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 			fsd_log_debug(("# job_min_cpus = %s",value));
 			job_desc->job_min_cpus = fsd_atoi(value);
+		#else
+			fsd_log_debug(("# min_cpus = %s",value));
+			job_desc->min_cpus = fsd_atoi(value);
+		#endif
 			break;
 		case SLURM_NATIVE_NODELIST:
 			fsd_free(job_desc->req_nodes);
