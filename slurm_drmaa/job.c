@@ -143,12 +143,17 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 						break;
 					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 					case WAIT_HELD_USER:   /* job is held by user */
-					#endif
+					
 						self->state = DRMAA_PS_USER_ON_HOLD;
 						break;
 					case WAIT_HELD:  /* job is held by administrator */
 						self->state = DRMAA_PS_SYSTEM_ON_HOLD;
 						break;
+					#else
+					case WAIT_HELD:  
+						self->state = DRMAA_PS_USER_ON_HOLD;
+						break;
+					#endif
 					case WAIT_TIME:  /* job waiting for specific begin time */
 					case WAIT_LICENSES:  /* job is waiting for licenses */
 					case WAIT_ASSOC_JOB_LIMIT:  /* user/bank job limit reached */
