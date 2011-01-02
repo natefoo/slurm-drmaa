@@ -175,8 +175,11 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 					#else
 					case FAIL_ACCOUNT:         /* invalid account */
 					#endif
+					
+					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 					case FAIL_QOS:             /* invalid QOS */
 					case WAIT_QOS_THRES:       /* required QOS threshold has been breached */
+					#endif
 						self->state = DRMAA_PS_FAILED;
 						break;
 					default:
