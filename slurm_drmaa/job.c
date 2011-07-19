@@ -425,26 +425,48 @@ slurmdrmaa_job_create(
 		fsd_log_debug(( "\n  drmaa_start_time: %s -> %ld", value, (long)job_desc->begin_time));
 	}
 
+        /*  propagate all environment variables from submission host */
+        {
+		extern char **environ;
+                char **i;
+                unsigned j = 0;
+
+                for ( i = environ; *i; i++) {
+                        job_desc->env_size++;
+                }
+		
+		fsd_log_debug(("environ env_size = %d",job_desc->env_size));
+		fsd_calloc(job_desc->environment, job_desc->env_size+1, char *);
+		
+		for( i = environ;  *i;  i++,j++ )
+                {
+                        job_desc->environment[j] = fsd_strdup(*i);
+                }
+
+        }
+
 	/* environment */
+	
 	vector = jt->get_v_attr( jt, DRMAA_V_ENV );
 	if( vector )
 	{
 		const char *const *i;
 		unsigned j = 0;
+		unsigned env_offset = job_desc->env_size;
 
 		for( i = vector;  *i;  i++ )
  		{
 			job_desc->env_size++;
 		}
-		fsd_log_debug(("env_size = %d",job_desc->env_size));
+		fsd_log_debug(("jt env_size = %d",job_desc->env_size));
 
 		fsd_log_debug(("# environment ="));
-		fsd_calloc(job_desc->environment, job_desc->env_size+1, char *);
+		fsd_realloc(job_desc->environment, job_desc->env_size+1, char *);
 
 		for( i = vector;  *i;  i++,j++ )
  		{
-			job_desc->environment[j] = fsd_strdup(*i);
-			fsd_log_debug((" %s", job_desc->environment[j]));
+			job_desc->environment[j + env_offset] = fsd_strdup(*i);
+			fsd_log_debug((" %s", job_desc->environment[j+ env_offset]));
 		}
 	 }
 	
@@ -453,7 +475,7 @@ slurmdrmaa_job_create(
 	if (value)
 	{
 		job_desc->time_limit = slurmdrmaa_datetime_parse( value );
-		fsd_log_debug(("# wct_hlimit = %s -> %ld",value,slurmdrmaa_datetime_parse( value )));
+		fsd_log_debug(("# wct_hlimit = %s -> %ld",value, (long int)slurmdrmaa_datetime_parse( value )));
 	}
 
 		
