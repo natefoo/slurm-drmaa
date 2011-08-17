@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
  * PSNC DRMAA for SLURM
  * Copyright (C) 2011 Poznan Supercomputing and Networking Center
@@ -99,7 +98,8 @@ enum slurm_native {
 	SLURM_NATIVE_QOS,
 	SLURM_NATIVE_REQUEUE,
 	SLURM_NATIVE_RESERVATION,
-	SLURM_NATIVE_SHARE
+	SLURM_NATIVE_SHARE,
+	SLURM_NATIVE_JOB_NAME
 };
 
 void
@@ -262,6 +262,11 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(("# shared = 1"));
 			job_desc->shared = 1;
 			break;
+		case SLURM_NATIVE_JOB_NAME:
+                	fsd_log_debug(("# job_name = %s",job_desc->name));
+                	job_desc->name = fsd_strdup(value);
+			break;
+	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
 	}
@@ -391,7 +396,11 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 						break;	
 					case 'w' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NODELIST, arg);
+						break;
+					case 'J' :
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME, arg);
 						break;		
+	
 					default :								
 							fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 									"Invalid native specification: %s (Unsupported option: -%c)",
