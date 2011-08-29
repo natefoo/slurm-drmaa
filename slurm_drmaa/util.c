@@ -99,7 +99,8 @@ enum slurm_native {
 	SLURM_NATIVE_REQUEUE,
 	SLURM_NATIVE_RESERVATION,
 	SLURM_NATIVE_SHARE,
-	SLURM_NATIVE_JOB_NAME
+	SLURM_NATIVE_JOB_NAME,
+	SLURM_NATIVE_TIME_LIMIT
 };
 
 void
@@ -266,7 +267,10 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
                 	fsd_log_debug(("# job_name = %s",job_desc->name));
                 	job_desc->name = fsd_strdup(value);
 			break;
-	
+                case SLURM_NATIVE_TIME_LIMIT:
+             		fsd_log_debug(("# time_limit = %s",value));
+             		job_desc->time_limit = atoi(value); 
+                        break;	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
 	}
@@ -336,7 +340,12 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 		else if (strcmp(name,"share") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE,NULL);
 		}		
-		else {
+                else if(strcmp(name,"job_name") == 0) {
+                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME,value);
+                }
+                else if(strcmp(name,"time_limit") == 0) {
+                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
+                } else {
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 					"Invalid native specification: %s (Unsupported option: --%s)",
 					add_attr, name);
@@ -400,6 +409,9 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'J' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME, arg);
 						break;		
+                                        case 't' :
+                                                slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT, arg);
+                                                break;  
 	
 					default :								
 							fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
