@@ -269,7 +269,7 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
                 case SLURM_NATIVE_TIME_LIMIT:
              		fsd_log_debug(("# time_limit = %s",value));
-             		job_desc->time_limit = atoi(value); 
+             		job_desc->time_limit = fsd_atoi(value); 
                         break;	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
