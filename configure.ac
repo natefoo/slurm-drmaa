@@ -1,4 +1,4 @@
-AC_INIT([PSNC DRMAA for SLURM], [1.0.0], [mamonski@man.poznan.pl], [slurm_drmaa])
+AC_INIT([PSNC DRMAA for SLURM], [1.0.2], [mamonski@man.poznan.pl], [slurm_drmaa])
 AC_PREREQ(2.59)
 AC_REVISION([$Id$])
 AC_COPYRIGHT([
@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 SLURM_DRMAA_MAJOR=1
 SLURM_DRMAA_MINOR=0
-SLURM_DRMAA_MICRO=1
-SLURM_DRMAA_VERSION_INFO=1:0:1
+SLURM_DRMAA_MICRO=2
+SLURM_DRMAA_VERSION_INFO=1:2:0
 AC_SUBST([SLURM_DRMAA_MAJOR])
 AC_SUBST([SLURM_DRMAA_MINOR])
 AC_SUBST([SLURM_DRMAA_MICRO])
