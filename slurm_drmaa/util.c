@@ -345,6 +345,9 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
                 }
                 else if(strcmp(name,"time_limit") == 0) {
                         slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
+                } 
+		else if(strcmp(name,"time") == 0) {
+                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
                 } else {
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 					"Invalid native specification: %s (Unsupported option: --%s)",
