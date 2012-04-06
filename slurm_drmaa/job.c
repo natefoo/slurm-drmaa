@@ -163,8 +163,17 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 					case WAIT_NODE_NOT_AVAIL:  /* required node is DOWN or DRAINED */
 					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
 					case WAIT_TBD1:
+					#else
+                                        case WAIT_QOS_THRES:       /* required QOS threshold has been reached */
 					#endif					
+					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,3,0)
 					case WAIT_TBD2:
+					#else
+					case WAIT_FRONT_END: /* Front end nodes are DOWN */
+				 	case WAIT_QOS_JOB_LIMIT: /* QOS job limit reached */    
+				   	case WAIT_QOS_RESOURCE_LIMIT: /* QOS resource limit reached */ 
+    					case WAIT_QOS_TIME_LIMIT: /*  QOS time limit reached */
+					#endif
 						self->state = DRMAA_PS_QUEUED_ACTIVE;
 						break;
 					case FAIL_DOWN_PARTITION:  /* partition for job is DOWN */
@@ -179,11 +188,7 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 					case FAIL_BANK_ACCOUNT:
 					#else
 					case FAIL_ACCOUNT:         /* invalid account */
-					#endif
-					
-					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 					case FAIL_QOS:             /* invalid QOS */
-					case WAIT_QOS_THRES:       /* required QOS threshold has been breached */
 					#endif
 						self->state = DRMAA_PS_FAILED;
 						break;
