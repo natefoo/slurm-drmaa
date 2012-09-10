@@ -33,7 +33,7 @@ static char rcsid[]
 	= "$Id$";
 #endif
 
-unsigned
+unsigned int
 slurmdrmaa_datetime_parse( const char *string )
 {
 #ifdef DEBUGGING
@@ -77,7 +77,7 @@ slurmdrmaa_datetime_parse( const char *string )
 	 }
 	END_TRY
 
-	fsd_log_return(( "(%s) =%u", string, (unsigned)60*dt.hour+dt.minute ));
+	fsd_log_return(( "(%s) =%u minutes", string, (unsigned)60*dt.hour+dt.minute ));
 	return 60*dt.hour+dt.minute;
 }
 
@@ -100,7 +100,8 @@ enum slurm_native {
 	SLURM_NATIVE_RESERVATION,
 	SLURM_NATIVE_SHARE,
 	SLURM_NATIVE_JOB_NAME,
-	SLURM_NATIVE_TIME_LIMIT
+	SLURM_NATIVE_TIME_LIMIT,
+	SLURM_NATIVE_NTASKS
 };
 
 void
@@ -127,8 +128,7 @@ slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc)
 	fsd_free(job_desc->mail_user);
 	fsd_free(job_desc->partition);
 	fsd_free(job_desc->qos);
-	fsd_free(job_desc->req_nodes);
-	fsd_free(job_desc->reservation);
+
 	fsd_free(job_desc->script);
 	fsd_free(job_desc->std_in);
 	fsd_free(job_desc->std_out);
@@ -222,7 +222,7 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_NODES:
 			ptr = strdup(value);
-
+			
 			if((token = strtok_r(ptr,"=",&rest)) == NULL){
 				fsd_log_error(("strtok_r returned NULL"));
 			}
@@ -264,13 +264,19 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			job_desc->shared = 1;
 			break;
 		case SLURM_NATIVE_JOB_NAME:
-                	fsd_log_debug(("# job_name = %s",job_desc->name));
-                	job_desc->name = fsd_strdup(value);
+			fsd_log_debug(("# job_name = %s",job_desc->name));
+			job_desc->name = fsd_strdup(value);
 			break;
-                case SLURM_NATIVE_TIME_LIMIT:
-             		fsd_log_debug(("# time_limit = %s",value));
-             		job_desc->time_limit = fsd_atoi(value); 
-                        break;	
+		case SLURM_NATIVE_NTASKS:
+			fsd_log_debug(("# ntasks = %s",value));
+			job_desc->num_tasks = fsd_atoi(value); 
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_MINCPUS,value);
+			break;	
+		case SLURM_NATIVE_TIME_LIMIT:
+			fsd_log_debug(("# time_limit = %s",value));
+			job_desc->time_limit = slurmdrmaa_datetime_parse(value); 
+			break;	
+	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
 	}
@@ -288,7 +294,11 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 	  {
 		name = fsd_strdup(strtok_r(add_attr_copy, "=", &ctxt));
 		value = strtok_r(NULL, "=", &ctxt);
-			
+		if (value == NULL) {
+			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE, 
+				"Invalid native specification: %s Missing '='.", add_attr_copy);
+		}
+
 		if(strcmp(name,"account") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_ACCOUNT,value);
 		}
@@ -348,6 +358,8 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
                 } 
 		else if(strcmp(name,"time") == 0) {
                         slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
+                } else if(strcmp(name,"ntasks") == 0) {
+                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NTASKS,value);
                 } else {
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 					"Invalid native specification: %s (Unsupported option: --%s)",
@@ -412,10 +424,12 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'J' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME, arg);
 						break;		
-                                        case 't' :
-                                                slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT, arg);
-                                                break;  
-	
+					case 't' :
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT, arg);
+						break;  
+					case 'n' :
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NTASKS, arg);
+						break;  
 					default :								
 							fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 									"Invalid native specification: %s (Unsupported option: -%c)",
