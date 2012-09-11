@@ -581,11 +581,13 @@ slurmdrmaa_job_create(
 		{
 			/* only to one email address message may be send */
 			job_desc->mail_user = fsd_strdup(vector[0]);
+			job_desc->mail_type = MAIL_JOB_BEGIN | MAIL_JOB_END |  MAIL_JOB_FAIL;
 			fsd_log_debug(("# mail_user = %s\n",vector[0]));
+			fsd_log_debug(("# mail_type = %o\n",job_desc->mail_type));
 			if( vector[1] != NULL )
 			{
-				fsd_log_error(( "LL only supports one e-mail notification address" ));
-				fsd_exc_raise_msg(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"LL only supports one e-mail notification address");
+				fsd_log_error(( "SLURM only supports one e-mail notification address" ));
+				fsd_exc_raise_msg(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"SLURM only supports one e-mail notification address");
 			}
 		}
 

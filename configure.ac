@@ -1,4 +1,4 @@
-AC_INIT([PSNC DRMAA for SLURM], [1.0.4], [mamonski@man.poznan.pl], [slurm-drmaa])
+AC_INIT([PSNC DRMAA for SLURM], [1.0.5], [mamonski@man.poznan.pl], [slurm-drmaa])
 AC_PREREQ(2.59)
 AC_REVISION([$Id$])
 AC_COPYRIGHT([
