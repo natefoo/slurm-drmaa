@@ -169,7 +169,9 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,3,0)
 					case WAIT_TBD2:
 					#else
+					#ifdef WAIT_FRONT_END
 					case WAIT_FRONT_END: /* Front end nodes are DOWN */
+					#endif
 				 	case WAIT_QOS_JOB_LIMIT: /* QOS job limit reached */    
 				   	case WAIT_QOS_RESOURCE_LIMIT: /* QOS resource limit reached */ 
     					case WAIT_QOS_TIME_LIMIT: /*  QOS time limit reached */
