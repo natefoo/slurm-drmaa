@@ -4,4 +4,5 @@ cat >&2 <<MESSAGE
  * sources are build by it.  Either install $1 or download
  * tarball with generated sources included.
 MESSAGE
+
 exit 1
