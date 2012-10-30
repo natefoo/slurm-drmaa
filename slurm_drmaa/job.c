@@ -115,132 +115,92 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 	TRY
 	{
 		if ( slurm_load_job( &job_info, fsd_atoi(self->job_id), SHOW_ALL) ) {
-			fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_load_jobs error: %s,job_id: %s",slurm_strerror(slurm_get_errno()),self->job_id);
-        }
-		
-		self->exit_status = job_info->job_array[0].exit_code;
-		fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
+			int _slurm_errno = slurm_get_errno();
 
-		switch(job_info->job_array[0].job_state)
+			if (_slurm_errno == ESLURM_INVALID_JOB_ID) {
+				self->on_missing(self);
+			} else {
+				fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_load_jobs error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+			}
+		}
+		
+		switch(job_info->job_array[0].job_state & JOB_STATE_BASE)
 		{
+			fsd_log_debug(("state = %d, state_reason = %d", job_info->job_array[0].job_state, job_info->job_array[0].state_reason));
+
 			case JOB_PENDING:
 				switch(job_info->job_array[0].state_reason)
 				{
-					case WAIT_NO_REASON:   /* not set or job not pending */
-					case WAIT_PRIORITY:    /* higher priority jobs exist */
-					case WAIT_DEPENDENCY:  /* dependent job has not completed */
-					case WAIT_RESOURCES:   /* required resources not available */
-					case WAIT_PART_NODE_LIMIT:   /* request exceeds partition node limit */
-					case WAIT_PART_TIME_LIMIT:   /* request exceeds partition time limit */
-					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
-					case WAIT_PART_STATE: 
-					#endif
-					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
-					case WAIT_PART_DOWN:   /* requested partition is down */
-					case WAIT_PART_INACTIVE:  /* requested partition is inactive */
-					#endif
-						self->state = DRMAA_PS_QUEUED_ACTIVE;
-						break;
 					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 					case WAIT_HELD_USER:   /* job is held by user */
-					
+						fsd_log_debug(("interpreting as DRMAA_PS_USER_ON_HOLD"));
 						self->state = DRMAA_PS_USER_ON_HOLD;
 						break;
+					#endif
 					case WAIT_HELD:  /* job is held by administrator */
+						fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_ON_HOLD"));
 						self->state = DRMAA_PS_SYSTEM_ON_HOLD;
 						break;
-					#else
-					case WAIT_HELD:  
-						self->state = DRMAA_PS_USER_ON_HOLD;
-						break;
-					#endif
-					case WAIT_TIME:  /* job waiting for specific begin time */
-					case WAIT_LICENSES:  /* job is waiting for licenses */
-					case WAIT_ASSOC_JOB_LIMIT:  /* user/bank job limit reached */
-					case WAIT_ASSOC_RESOURCE_LIMIT:  /* user/bank resource limit reached */
-					case WAIT_ASSOC_TIME_LIMIT:  /* user/bank time limit reached */
-					case WAIT_RESERVATION:    /* reservation not available */
-					case WAIT_NODE_NOT_AVAIL:  /* required node is DOWN or DRAINED */
-					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
-					case WAIT_TBD1:
-					#else
-                                        case WAIT_QOS_THRES:       /* required QOS threshold has been reached */
-					#endif					
-					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,3,0)
-					case WAIT_TBD2:
-					#else
-					#ifdef WAIT_FRONT_END
-					case WAIT_FRONT_END: /* Front end nodes are DOWN */
-					#endif
-				 	case WAIT_QOS_JOB_LIMIT: /* QOS job limit reached */    
-				   	case WAIT_QOS_RESOURCE_LIMIT: /* QOS resource limit reached */ 
-    					case WAIT_QOS_TIME_LIMIT: /*  QOS time limit reached */
-					#endif
-						self->state = DRMAA_PS_QUEUED_ACTIVE;
-						break;
-					case FAIL_DOWN_PARTITION:  /* partition for job is DOWN */
-					case FAIL_DOWN_NODE:       /* some node in the allocation failed */
-					case FAIL_BAD_CONSTRAINTS: /* constraints can not be satisfied */
-					case FAIL_SYSTEM:          /* slurm system failure */
-					case FAIL_LAUNCH:          /* unable to launch job */
-					case FAIL_EXIT_CODE:       /* exit code was non-zero */
-					case FAIL_TIMEOUT:         /* reached end of time limit */
-					case FAIL_INACTIVE_LIMIT:  /* reached slurm InactiveLimit */
-					#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
-					case FAIL_BANK_ACCOUNT:
-					#else
-					case FAIL_ACCOUNT:         /* invalid account */
-					case FAIL_QOS:             /* invalid QOS */
-					#endif
-						self->state = DRMAA_PS_FAILED;
-						break;
 					default:
-						fsd_log_error(("job_state_reason = %d, assert(0)",job_info->job_array[0].state_reason));
-						fsd_assert(false);
-	
+						fsd_log_debug(("interpreting as DRMAA_PS_QUEUED_ACTIVE"));
+						self->state = DRMAA_PS_QUEUED_ACTIVE;
 				}
 				break;
 			case JOB_RUNNING:
+				fsd_log_debug(("interpreting as DRMAA_PS_RUNNING"));
 				self->state = DRMAA_PS_RUNNING;
 				break;
 			case JOB_SUSPENDED:
-				if(slurm_self->user_suspended == true)
+				if(slurm_self->user_suspended == true) {
+					fsd_log_debug(("interpreting as DRMAA_PS_USER_SUSPENDED"));
 					self->state = DRMAA_PS_USER_SUSPENDED;
-				else
-					self->state = DRMAA_PS_SYSTEM_SUSPENDED; /* assume SYSTEM - suspendig jobs is administrator only */
+				} else {
+					fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_SUSPENDED"));
+					self->state = DRMAA_PS_SYSTEM_SUSPENDED;
+				}
 				break;
 			case JOB_COMPLETE:
+				fsd_log_debug(("interpreting as DRMAA_PS_DONE"));
 				self->state = DRMAA_PS_DONE;
+				self->exit_status = job_info->job_array[0].exit_code;
+				fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
 				break;
 			case JOB_CANCELLED:
+				fsd_log_debug(("interpreting as DRMAA_PS_FAILED (aborted)"));
+				self->state = DRMAA_PS_FAILED;
 				self->exit_status = -1;
 			case JOB_FAILED:
 			case JOB_TIMEOUT:
 			case JOB_NODE_FAIL:
+			#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
+			case JOB_PREEMPTED:
+			#endif
+				fsd_log_debug(("interpreting as DRMAA_PS_FAILED"));
 				self->state = DRMAA_PS_FAILED;
+				self->exit_status = job_info->job_array[0].exit_code;
+				fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
 				break;
-			default: /*transient states */
-				if(job_info->job_array[0].job_state >= 0x8000) {
-					fsd_log_debug(("state COMPLETING"));
-				}
-				else if (job_info->job_array[0].job_state >= 0x4000) {
-					fsd_log_debug(("state Allocated nodes booting"));
-				}
-				else {
-					fsd_log_error(("job_state = %d, assert(0)",job_info->job_array[0].job_state));
-					fsd_assert(false);
-				}
+			default: /*unknown state */
+				fsd_log_error(("Unknown job state: %d. Please send bug report: http://apps.man.poznan.pl/trac/slurm-drmaa", job_info->job_array[0].job_state));
 		}
 
-		if(self->exit_status == -1) /* input,output,error path failure etc*/
-			self->state = DRMAA_PS_FAILED;
+		if (job_info->job_array[0].job_state & JOB_STATE_FLAGS & JOB_COMPLETING) {
+			fsd_log_debug(("Epilog completing"));
+		}
 
-		fsd_log_debug(("state: %d ,state_reason: %d-> %s", job_info->job_array[0].job_state, job_info->job_array[0].state_reason, drmaa_job_ps_to_str(self->state)));
+		if (job_info->job_array[0].job_state & JOB_STATE_FLAGS & JOB_CONFIGURING) {
+			fsd_log_debug(("Nodes booting"));
+		}
+
+		if (self->exit_status == -1) /* input,output,error path failure etc*/
+			self->state = DRMAA_PS_FAILED;
 
 		self->last_update_time = time(NULL);
 	
-		if( self->state >= DRMAA_PS_DONE )
+		if( self->state >= DRMAA_PS_DONE ) {
+			fsd_log_debug(("exit_status = %d, WEXITSTATUS(exit_status) = %d", self->exit_status, WEXITSTATUS(self->exit_status)));
 			fsd_cond_broadcast( &self->status_cond );
+		}
 	}
 	FINALLY
 	{
@@ -254,6 +214,32 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 	fsd_log_return(( "" ));
 }
 
+static void
+slurmdrmaa_job_on_missing( fsd_job_t *self )
+{
+
+	fsd_log_enter(( "({job_id=%s})", self->job_id ));
+	fsd_log_warning(( "Job %s missing from DRM queue", self->job_id ));
+
+	fsd_log_info(( "job_on_missing: last job_ps: %s (0x%02x)", drmaa_job_ps_to_str(self->state), self->state));
+
+	if( self->state >= DRMAA_PS_RUNNING ) { /*if the job ever entered running state assume finished */
+		self->state = DRMAA_PS_DONE;
+		self->exit_status = 0;
+	}
+	else {
+		self->state = DRMAA_PS_FAILED; /* otherwise failed */
+		self->exit_status = -1;
+	}
+
+	fsd_log_info(("job_on_missing evaluation result: state=%d exit_status=%d", self->state, self->exit_status));
+
+	fsd_cond_broadcast( &self->status_cond);
+	fsd_cond_broadcast( &self->session->wait_condition );
+
+	fsd_log_return(( "; job_ps=%s, exit_status=%d", drmaa_job_ps_to_str(self->state), self->exit_status ));
+}
+
 fsd_job_t *
 slurmdrmaa_job_new( char *job_id )
 {
@@ -264,6 +250,7 @@ slurmdrmaa_job_new( char *job_id )
 
 	self->super.control = slurmdrmaa_job_control;
 	self->super.update_status = slurmdrmaa_job_update_status;
+	self->super.on_missing = slurmdrmaa_job_on_missing;
 	self->old_priority = UINT32_MAX;
 	self->user_suspended = true;
 	return (fsd_job_t*)self;
@@ -432,25 +419,23 @@ slurmdrmaa_job_create(
 		fsd_log_debug(( "\n  drmaa_start_time: %s -> %ld", value, (long)job_desc->begin_time));
 	}
 
-        /*  propagate all environment variables from submission host */
-        {
+	/*  propagate all environment variables from submission host */
+	{
 		extern char **environ;
-                char **i;
-                unsigned j = 0;
+		char **i;
+		unsigned j = 0;
 
-                for ( i = environ; *i; i++) {
-                        job_desc->env_size++;
-                }
+		for ( i = environ; *i; i++) {
+			job_desc->env_size++;
+		}
 		
 		fsd_log_debug(("environ env_size = %d",job_desc->env_size));
 		fsd_calloc(job_desc->environment, job_desc->env_size+1, char *);
 		
-		for( i = environ;  *i;  i++,j++ )
-                {
-                        job_desc->environment[j] = fsd_strdup(*i);
-                }
-
-        }
+		for ( i = environ; *i; i++,j++ ) {
+			job_desc->environment[j] = fsd_strdup(*i);
+		}
+	}
 
 	/* environment */
 	
@@ -686,5 +671,5 @@ slurmdrmaa_job_create(
  	}
 	
 }		
-		
+
 

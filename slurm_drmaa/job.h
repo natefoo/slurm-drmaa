@@ -42,8 +42,8 @@ struct slurmdrmaa_job_s {
 	bool user_suspended;
 };
 
-void slurmdrmaa_job_create_req(fsd_drmaa_session_t *session,const fsd_template_t *jt,fsd_environ_t **envp, job_desc_msg_t * job_desc,	int n_job );
-void slurmdrmaa_job_create(fsd_drmaa_session_t *session,const fsd_template_t *jt,fsd_environ_t **envp,fsd_expand_drmaa_ph_t *expand, job_desc_msg_t * job_desc,	int n_job);
+void slurmdrmaa_job_create_req(fsd_drmaa_session_t *session, const fsd_template_t *jt, fsd_environ_t **envp, job_desc_msg_t * job_desc, int n_job );
+void slurmdrmaa_job_create(fsd_drmaa_session_t *session, const fsd_template_t *jt, fsd_environ_t **envp, fsd_expand_drmaa_ph_t *expand, job_desc_msg_t * job_desc, int n_job);
 
 #endif /* __SLURM_DRMAA__JOB_H */
 
