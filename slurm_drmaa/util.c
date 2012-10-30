@@ -81,6 +81,29 @@ slurmdrmaa_datetime_parse( const char *string )
 	return 60*dt.hour+dt.minute;
 }
 
+/* taken from SLURM src/common/proc_args.c */
+static int slurmdrmaa_mail_type_parse(const char *mail_type_str)
+{
+	int rc = 0;
+
+
+	if (strcasecmp(mail_type_str, "BEGIN") == 0)
+		rc = MAIL_JOB_BEGIN;
+	else if (strcasecmp(mail_type_str, "END") == 0)
+		rc = MAIL_JOB_END;
+	else if (strcasecmp(mail_type_str, "FAIL") == 0)
+		rc = MAIL_JOB_FAIL;
+	else if (strcasecmp(mail_type_str, "REQUEUE") == 0)
+		rc = MAIL_JOB_REQUEUE;
+	else if (strcasecmp(mail_type_str, "ALL") == 0)
+		rc = MAIL_JOB_BEGIN | MAIL_JOB_END | MAIL_JOB_FAIL | MAIL_JOB_REQUEUE;
+	else
+		rc = 0; /* failure */
+
+	return rc;
+}
+
+
 enum slurm_native {
 	SLURM_NATIVE_ACCOUNT,
 	SLURM_NATIVE_ACCTG_FREQ,
@@ -101,7 +124,13 @@ enum slurm_native {
 	SLURM_NATIVE_SHARE,
 	SLURM_NATIVE_JOB_NAME,
 	SLURM_NATIVE_TIME_LIMIT,
-	SLURM_NATIVE_NTASKS
+	SLURM_NATIVE_NTASKS,
+	SLURM_NATIVE_GRES,
+	SLURM_NATIVE_NO_KILL,
+	SLURM_NATIVE_LICENSES,
+	SLURM_NATIVE_MAIL_TYPE,
+	SLURM_NATIVE_NO_REQUEUE,
+	SLURM_NATIVE_EXCLUDE
 };
 
 void
@@ -128,12 +157,14 @@ slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc)
 	fsd_free(job_desc->mail_user);
 	fsd_free(job_desc->partition);
 	fsd_free(job_desc->qos);
-
 	fsd_free(job_desc->script);
 	fsd_free(job_desc->std_in);
 	fsd_free(job_desc->std_out);
 	fsd_free(job_desc->std_err);	
 	fsd_free(job_desc->work_dir);
+	fsd_free(job_desc->gres);
+	fsd_free(job_desc->exc_nodes);
+
 	
 	fsd_log_return(( "" ));
 }
@@ -276,6 +307,30 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(("# time_limit = %s",value));
 			job_desc->time_limit = slurmdrmaa_datetime_parse(value); 
 			break;	
+		case SLURM_NATIVE_GRES:
+			fsd_log_debug(("# gres = %s",value));
+			job_desc->gres = fsd_strdup(value);
+			break;
+		case SLURM_NATIVE_NO_KILL:
+			fsd_log_debug(("# no_kill = 1"));
+			job_desc->kill_on_node_fail = 0;
+			break;
+		case SLURM_NATIVE_LICENSES:
+			fsd_log_debug(("# licenses = %s", value));
+			job_desc->licenses = fsd_strdup(value);
+			break;
+		case SLURM_NATIVE_MAIL_TYPE:
+			fsd_log_debug(("# mail_type = %s", value));
+			job_desc->mail_type = slurmdrmaa_mail_type_parse(value);
+			break;
+		case SLURM_NATIVE_NO_REQUEUE:
+			fsd_log_debug(("# requeue = 0"));
+			job_desc->requeue = 0;
+			break;
+		case SLURM_NATIVE_EXCLUDE:
+			fsd_log_debug(("# exclude = %s", value));
+			job_desc->exc_nodes = fsd_strdup(value);
+			break;
 	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
@@ -294,10 +349,12 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 	  {
 		name = fsd_strdup(strtok_r(add_attr_copy, "=", &ctxt));
 		value = strtok_r(NULL, "=", &ctxt);
-		if (value == NULL) {
+		/*
+		 * TODO: move it to slurmdrmaa_add_attribute
+		 if (value == NULL) {
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE, 
 				"Invalid native specification: %s Missing '='.", add_attr_copy);
-		}
+		} */
 
 		if(strcmp(name,"account") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_ACCOUNT,value);
@@ -350,23 +407,42 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 		else if (strcmp(name,"share") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE,NULL);
 		}		
-                else if(strcmp(name,"job_name") == 0) {
-                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME,value);
-                }
-                else if(strcmp(name,"time_limit") == 0) {
-                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
-                } 
+		else if(strcmp(name,"job_name") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME,value);
+		}
+		else if(strcmp(name,"time_limit") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
+		}
 		else if(strcmp(name,"time") == 0) {
-                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
-                } else if(strcmp(name,"ntasks") == 0) {
-                        slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NTASKS,value);
-                } else {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT,value);
+		}
+		else if(strcmp(name,"ntasks") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NTASKS,value);
+		}
+		else if(strcmp(name,"gres") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_GRES,value);
+		}
+		else if(strcmp(name,"no-kill") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_KILL,NULL);
+		}
+		else if(strcmp(name,"licenses") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_LICENSES,value);
+		}
+		else if(strcmp(name,"mail-type") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_MAIL_TYPE,value);
+		}
+		else if(strcmp(name,"no-requeue") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_REQUEUE,NULL);
+		}
+		else if(strcmp(name,"exclude") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUDE,value);
+		}
+		else {
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 					"Invalid native specification: %s (Unsupported option: --%s)",
 					add_attr, name);
 		}
 	
-		/*}*/
 	  }
 	FINALLY
 	  {
@@ -402,7 +478,7 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					opt = arg[1];
 				}		
 			} else {
-				switch (opt) {			
+				switch (opt) {
 					case 'A' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_ACCOUNT, arg);
 						break;
@@ -417,20 +493,23 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 						break;
 					case 's' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE, NULL);
-						break;	
+						break;
 					case 'w' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NODELIST, arg);
 						break;
 					case 'J' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME, arg);
-						break;		
+						break;
 					case 't' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TIME_LIMIT, arg);
 						break;  
 					case 'n' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NTASKS, arg);
 						break;  
-					default :								
+					case 'x' :
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUDE, arg);
+						break;
+					default :
 							fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 									"Invalid native specification: %s (Unsupported option: -%c)",
 									native_specification, opt);
