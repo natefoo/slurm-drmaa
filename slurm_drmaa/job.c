@@ -120,86 +120,88 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 			if (_slurm_errno == ESLURM_INVALID_JOB_ID) {
 				self->on_missing(self);
 			} else {
-				fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_load_jobs error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR,"slurm_load_jobs error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
 			}
 		}
-		
-		switch(job_info->job_array[0].job_state & JOB_STATE_BASE)
-		{
+		if (job_info) {
 			fsd_log_debug(("state = %d, state_reason = %d", job_info->job_array[0].job_state, job_info->job_array[0].state_reason));
+			
+			switch(job_info->job_array[0].job_state & JOB_STATE_BASE)
+			{
 
-			case JOB_PENDING:
-				switch(job_info->job_array[0].state_reason)
-				{
-					#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
-					case WAIT_HELD_USER:   /* job is held by user */
-						fsd_log_debug(("interpreting as DRMAA_PS_USER_ON_HOLD"));
-						self->state = DRMAA_PS_USER_ON_HOLD;
-						break;
-					#endif
-					case WAIT_HELD:  /* job is held by administrator */
-						fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_ON_HOLD"));
-						self->state = DRMAA_PS_SYSTEM_ON_HOLD;
-						break;
-					default:
-						fsd_log_debug(("interpreting as DRMAA_PS_QUEUED_ACTIVE"));
-						self->state = DRMAA_PS_QUEUED_ACTIVE;
-				}
-				break;
-			case JOB_RUNNING:
-				fsd_log_debug(("interpreting as DRMAA_PS_RUNNING"));
-				self->state = DRMAA_PS_RUNNING;
-				break;
-			case JOB_SUSPENDED:
-				if(slurm_self->user_suspended == true) {
-					fsd_log_debug(("interpreting as DRMAA_PS_USER_SUSPENDED"));
-					self->state = DRMAA_PS_USER_SUSPENDED;
-				} else {
-					fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_SUSPENDED"));
-					self->state = DRMAA_PS_SYSTEM_SUSPENDED;
-				}
-				break;
-			case JOB_COMPLETE:
-				fsd_log_debug(("interpreting as DRMAA_PS_DONE"));
-				self->state = DRMAA_PS_DONE;
-				self->exit_status = job_info->job_array[0].exit_code;
-				fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
-				break;
-			case JOB_CANCELLED:
-				fsd_log_debug(("interpreting as DRMAA_PS_FAILED (aborted)"));
+				case JOB_PENDING:
+					switch(job_info->job_array[0].state_reason)
+					{
+						#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
+						case WAIT_HELD_USER:   /* job is held by user */
+							fsd_log_debug(("interpreting as DRMAA_PS_USER_ON_HOLD"));
+							self->state = DRMAA_PS_USER_ON_HOLD;
+							break;
+						#endif
+						case WAIT_HELD:  /* job is held by administrator */
+							fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_ON_HOLD"));
+							self->state = DRMAA_PS_SYSTEM_ON_HOLD;
+							break;
+						default:
+							fsd_log_debug(("interpreting as DRMAA_PS_QUEUED_ACTIVE"));
+							self->state = DRMAA_PS_QUEUED_ACTIVE;
+					}
+					break;
+				case JOB_RUNNING:
+					fsd_log_debug(("interpreting as DRMAA_PS_RUNNING"));
+					self->state = DRMAA_PS_RUNNING;
+					break;
+				case JOB_SUSPENDED:
+					if(slurm_self->user_suspended == true) {
+						fsd_log_debug(("interpreting as DRMAA_PS_USER_SUSPENDED"));
+						self->state = DRMAA_PS_USER_SUSPENDED;
+					} else {
+						fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_SUSPENDED"));
+						self->state = DRMAA_PS_SYSTEM_SUSPENDED;
+					}
+					break;
+				case JOB_COMPLETE:
+					fsd_log_debug(("interpreting as DRMAA_PS_DONE"));
+					self->state = DRMAA_PS_DONE;
+					self->exit_status = job_info->job_array[0].exit_code;
+					fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
+					break;
+				case JOB_CANCELLED:
+					fsd_log_debug(("interpreting as DRMAA_PS_FAILED (aborted)"));
+					self->state = DRMAA_PS_FAILED;
+					self->exit_status = -1;
+				case JOB_FAILED:
+				case JOB_TIMEOUT:
+				case JOB_NODE_FAIL:
+				#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
+				case JOB_PREEMPTED:
+				#endif
+					fsd_log_debug(("interpreting as DRMAA_PS_FAILED"));
+					self->state = DRMAA_PS_FAILED;
+					self->exit_status = job_info->job_array[0].exit_code;
+					fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
+					break;
+				default: /*unknown state */
+					fsd_log_error(("Unknown job state: %d. Please send bug report: http://apps.man.poznan.pl/trac/slurm-drmaa", job_info->job_array[0].job_state));
+			}
+
+			if (job_info->job_array[0].job_state & JOB_STATE_FLAGS & JOB_COMPLETING) {
+				fsd_log_debug(("Epilog completing"));
+			}
+
+			if (job_info->job_array[0].job_state & JOB_STATE_FLAGS & JOB_CONFIGURING) {
+				fsd_log_debug(("Nodes booting"));
+			}
+
+			if (self->exit_status == -1) /* input,output,error path failure etc*/
 				self->state = DRMAA_PS_FAILED;
-				self->exit_status = -1;
-			case JOB_FAILED:
-			case JOB_TIMEOUT:
-			case JOB_NODE_FAIL:
-			#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
-			case JOB_PREEMPTED:
-			#endif
-				fsd_log_debug(("interpreting as DRMAA_PS_FAILED"));
-				self->state = DRMAA_PS_FAILED;
-				self->exit_status = job_info->job_array[0].exit_code;
-				fsd_log_debug(("exit_status = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
-				break;
-			default: /*unknown state */
-				fsd_log_error(("Unknown job state: %d. Please send bug report: http://apps.man.poznan.pl/trac/slurm-drmaa", job_info->job_array[0].job_state));
-		}
 
-		if (job_info->job_array[0].job_state & JOB_STATE_FLAGS & JOB_COMPLETING) {
-			fsd_log_debug(("Epilog completing"));
-		}
-
-		if (job_info->job_array[0].job_state & JOB_STATE_FLAGS & JOB_CONFIGURING) {
-			fsd_log_debug(("Nodes booting"));
-		}
-
-		if (self->exit_status == -1) /* input,output,error path failure etc*/
-			self->state = DRMAA_PS_FAILED;
-
-		self->last_update_time = time(NULL);
-	
-		if( self->state >= DRMAA_PS_DONE ) {
-			fsd_log_debug(("exit_status = %d, WEXITSTATUS(exit_status) = %d", self->exit_status, WEXITSTATUS(self->exit_status)));
-			fsd_cond_broadcast( &self->status_cond );
+			self->last_update_time = time(NULL);
+		
+			if( self->state >= DRMAA_PS_DONE ) {
+				fsd_log_debug(("exit_status = %d, WEXITSTATUS(exit_status) = %d", self->exit_status, WEXITSTATUS(self->exit_status)));
+				fsd_cond_broadcast( &self->status_cond );
+			}
 		}
 	}
 	FINALLY
