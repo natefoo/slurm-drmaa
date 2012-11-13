@@ -137,7 +137,8 @@ enum slurm_native {
 	SLURM_NATIVE_LICENSES,
 	SLURM_NATIVE_MAIL_TYPE,
 	SLURM_NATIVE_NO_REQUEUE,
-	SLURM_NATIVE_EXCLUDE
+	SLURM_NATIVE_EXCLUDE,
+	SLURM_NATIVE_TMP
 };
 
 void
@@ -343,6 +344,10 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(("# exclude = %s", value));
 			job_desc->exc_nodes = fsd_strdup(value);
 			break;
+		case SLURM_NATIVE_TMP:
+			fsd_log_debug(("# tmp = %s", value));
+			job_desc->job_min_tmp_disk = fsd_atoi(value);
+			break;
 	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
@@ -449,7 +454,9 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 		else if(strcmp(name,"exclude") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUDE,value);
 		}
-		else {
+		else if(strcmp(name,"tmp") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_TMP,value);
+		} else {
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 					"Invalid native specification: %s (Unsupported option: --%s)",
 					add_attr, name);
