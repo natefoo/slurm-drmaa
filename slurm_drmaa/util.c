@@ -238,8 +238,8 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			}
 		#else
 			if(job_desc->pn_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->pn_min_memory) {
-				fsd_log_debug(("# pn_min_memory = %s",value));
-				job_desc->pn_min_memory = fsd_atoi(value);
+				fsd_log_debug(("# pn_min_memory (MEM_PER_CPU) = %s",value));
+				job_desc->pn_min_memory = fsd_atoi(value) | MEM_PER_CPU;
 			}
 		#endif
 			else { 
