@@ -532,6 +532,9 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'x' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUDE, arg);
 						break;
+					case 'L' :
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_LICENSES, arg);
+						break;							
 					default :
 							fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 									"Invalid native specification: %s (Unsupported option: -%c)",
