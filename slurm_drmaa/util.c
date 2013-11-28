@@ -346,7 +346,11 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_TMP:
 			fsd_log_debug(("# tmp = %s", value));
-			job_desc->job_min_tmp_disk = fsd_atoi(value);
+	        	#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
+            		job_desc->pn_min_tmp_disk = fsd_atoi(value);
+            		#else
+            		job_desc->job_min_tmp_disk = fsd_atoi(value);
+            		#endif
 			break;
 	
 		default:
