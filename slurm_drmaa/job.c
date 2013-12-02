@@ -634,14 +634,7 @@ slurmdrmaa_job_create(
 	}
 	END_TRY			
 	
-	/* native specification */
-	value = jt->get_attr( jt, DRMAA_NATIVE_SPECIFICATION );
-	if( value )
-	{
-		fsd_log_debug(("# Native specification: %s\n", value));
-		slurmdrmaa_parse_native(job_desc, value);
-	}
-		
+	
 	/* job category */
 	value = jt->get_attr( jt, DRMAA_JOB_CATEGORY );
 	if( value )
@@ -671,6 +664,14 @@ slurmdrmaa_job_create(
 						);
 	 	}
  	}
+
+	/* native specification */
+	value = jt->get_attr( jt, DRMAA_NATIVE_SPECIFICATION );
+	if( value )
+	{
+		fsd_log_debug(("# Native specification: %s\n", value));
+		slurmdrmaa_parse_native(job_desc, value);
+	}
 	
 }		
 
