@@ -352,7 +352,6 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
             		job_desc->job_min_tmp_disk = fsd_atoi(value);
             		#endif
 			break;
-	
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
 	}
