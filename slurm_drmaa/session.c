@@ -92,7 +92,7 @@ slurmdrmaa_session_run_bulk(
 {
 	fsd_job_t *volatile job = NULL;
 	char **volatile job_ids = NULL;
-	unsigned n_jobs = 0;
+	unsigned n_jobs = 1;
 	volatile bool connection_lock = false;
 	fsd_environ_t *volatile env = NULL;
 	job_desc_msg_t job_desc;
@@ -102,13 +102,10 @@ slurmdrmaa_session_run_bulk(
 	 {
 
 		if( start != end )
-			n_jobs = (end - start) / incr + 1;
-		else 
-			n_jobs = 1;	
-
-		if(  start != end )
 		 {
 			unsigned idx, i;
+
+			n_jobs = (end - start) / incr + 1;
 
 			fsd_calloc( job_ids, n_jobs+1, char* );
 
@@ -124,7 +121,6 @@ slurmdrmaa_session_run_bulk(
 				fsd_log_debug(("job %u submitted", submit_response->job_id));         
 				connection_lock = fsd_mutex_unlock( &self->drm_connection_mutex );
 
-
 				job_ids[i] = fsd_asprintf("%d",submit_response->job_id); /*TODO  */
 
 				job = slurmdrmaa_job_new( fsd_strdup(job_ids[i]) ); 
@@ -139,7 +135,7 @@ slurmdrmaa_session_run_bulk(
 		else /* ! bulk */
 		 {
 			fsd_calloc( job_ids, n_jobs+1, char* );
-			
+
 			connection_lock = fsd_mutex_lock( &self->drm_connection_mutex );
 			slurmdrmaa_job_create_req( self, jt, (fsd_environ_t**)&env , &job_desc, 0);
 			if(slurm_submit_batch_job(&job_desc,&submit_response)){
@@ -147,8 +143,9 @@ slurmdrmaa_session_run_bulk(
 					FSD_ERRNO_INTERNAL_ERROR,"slurm_submit_batch_job: %s",slurm_strerror(slurm_get_errno()));
 			}
 
-			fsd_log_debug(("job %u submitted", submit_response->job_id));         
 			connection_lock = fsd_mutex_unlock( &self->drm_connection_mutex );
+
+			fsd_log_debug(("job %u submitted", submit_response->job_id));         
 			
 			job_ids[0] = fsd_asprintf( "%d", submit_response->job_id); /* .0*/
 

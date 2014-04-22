@@ -117,6 +117,7 @@ enum slurm_native {
 	SLURM_NATIVE_COMMENT,
 	SLURM_NATIVE_CONSTRAINT,
 	SLURM_NATIVE_CONTIGUOUS,
+	SLURM_NATIVE_CPUS_PER_TASK,
 	SLURM_NATIVE_EXCLUSIVE,
 	SLURM_NATIVE_MEM,
 	SLURM_NATIVE_MEM_PER_CPU,
@@ -210,6 +211,10 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(( "# contiguous = 1"));
 			job_desc->contiguous = 1;
 			break;
+		case SLURM_NATIVE_CPUS_PER_TASK:
+			fsd_log_debug(( "# cpus_per_task = %s", value));
+            job_desc->cpus_per_task = fsd_atoi(value);
+			break;
 		case SLURM_NATIVE_EXCLUSIVE:
 			fsd_log_debug(( "# exclusive -> shared = 0"));
 			job_desc->shared = 0;
@@ -251,8 +256,8 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(("# job_min_cpus = %s",value));
 			job_desc->job_min_cpus = fsd_atoi(value);
 		#else
-			fsd_log_debug(("# min_cpus = %s",value));
-			job_desc->min_cpus = fsd_atoi(value);
+			fsd_log_debug(("# pn_min_cpus = %s",value));
+			job_desc->pn_min_cpus = fsd_atoi(value);
 		#endif
 			break;
 		case SLURM_NATIVE_NODELIST:
@@ -310,7 +315,6 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 		case SLURM_NATIVE_NTASKS:
 			fsd_log_debug(("# ntasks = %s",value));
 			job_desc->num_tasks = fsd_atoi(value); 
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_MINCPUS,value);
 			break;	
 		case SLURM_NATIVE_TIME_LIMIT:
 			fsd_log_debug(("# time_limit = %s",value));
@@ -346,11 +350,11 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_TMP:
 			fsd_log_debug(("# tmp = %s", value));
-	        	#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
-            		job_desc->pn_min_tmp_disk = fsd_atoi(value);
-            		#else
-            		job_desc->job_min_tmp_disk = fsd_atoi(value);
-            		#endif
+				#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
+					job_desc->pn_min_tmp_disk = fsd_atoi(value);
+					#else
+					job_desc->job_min_tmp_disk = fsd_atoi(value);
+					#endif
 			break;
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
@@ -364,6 +368,8 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 	char *value = NULL;
 	char *ctxt = NULL;
 	char * volatile add_attr_copy = fsd_strdup(add_attr);
+
+	fsd_log_enter(( "" ));
 
 	TRY
 	  {
@@ -390,6 +396,9 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 		}
 		else if (strcmp(name,"contiguous") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CONTIGUOUS,NULL);
+		}
+		else if (strcmp(name,"cpus-per-task") == 0) {
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CPUS_PER_TASK,value);
 		}
 		else if(strcmp(name,"exclusive") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUSIVE,NULL);
@@ -472,6 +481,7 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr)
 		fsd_free(add_attr_copy);
 	  }
 	END_TRY
+	fsd_log_return(( "" ));
 }
 
 void 
@@ -507,6 +517,9 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'C' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CONSTRAINT, arg);
 						break;	
+					case 'c' :
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CPUS_PER_TASK, arg);
+						break;  
 					case 'N' :	
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NODES, arg);
 						break;	
@@ -562,6 +575,20 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 	 }
 	FINALLY
 	 {
+        fsd_log_debug(( "finalizing job constraints" ));
+        if( job_desc->cpus_per_task > 0 ) {
+            job_desc->min_cpus = job_desc->num_tasks * job_desc->cpus_per_task ;
+            fsd_log_debug((
+                        "set min_cpus to ntasks*cpus_per_task: %d",
+                        job_desc->min_cpus 
+                        ));
+        } else {
+            job_desc->min_cpus = job_desc->num_tasks ; 
+            fsd_log_debug((
+                        "set min_cpus to ntasks: %d",
+                        job_desc->min_cpus 
+                        ));
+        }
 		fsd_free(native_spec_copy);
 		fsd_free(native_specification);
 	 }
