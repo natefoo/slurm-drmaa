@@ -665,6 +665,13 @@ slurmdrmaa_job_create(
 	 	}
  	}
 
+    /* set defaults for constraints - ref: slurm.h */
+    fsd_log_debug(("# Setting defaults for tasks and processors" ));
+    job_desc->num_tasks = 1;
+    job_desc->min_cpus = 0;
+    job_desc->cpus_per_task = 0;
+    job_desc->pn_min_cpus = 0;
+
 	/* native specification */
 	value = jt->get_attr( jt, DRMAA_NATIVE_SPECIFICATION );
 	if( value )
@@ -673,6 +680,6 @@ slurmdrmaa_job_create(
 		slurmdrmaa_parse_native(job_desc, value);
 	}
 	
-}		
+}
 
 
