@@ -132,12 +132,10 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 				case JOB_PENDING:
 					switch(job_info->job_array[0].state_reason)
 					{
-						#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 						case WAIT_HELD_USER:   /* job is held by user */
 							fsd_log_debug(("interpreting as DRMAA_PS_USER_ON_HOLD"));
 							self->state = DRMAA_PS_USER_ON_HOLD;
 							break;
-						#endif
 						case WAIT_HELD:  /* job is held by administrator */
 							fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_ON_HOLD"));
 							self->state = DRMAA_PS_SYSTEM_ON_HOLD;
@@ -173,9 +171,7 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 				case JOB_FAILED:
 				case JOB_TIMEOUT:
 				case JOB_NODE_FAIL:
-				#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
 				case JOB_PREEMPTED:
-				#endif
 					fsd_log_debug(("interpreting as DRMAA_PS_FAILED"));
 					self->state = DRMAA_PS_FAILED;
 					self->exit_status = job_info->job_array[0].exit_code;
