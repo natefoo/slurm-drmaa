@@ -1,3 +1,6 @@
+2014-04-22 Michael Gutteridge <michael.gutteridge@gmail.com>
+	* slurm_drmaa/job.c, slurm_drmaa/util.c: cpus-per-task patch
+
 2014-07-21 E V <eliventer@gmail.com>
 	* slurm_drmaa/job.c, slurm_drmaa/session.c: job array patch
 
