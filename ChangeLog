@@ -1,0 +1,6 @@
+2014-07-21 E V <eliventer@gmail.com>
+	* slurm_drmaa/job.c, slurm_drmaa/session.c: job array patch
+
+2014-07-22 Piotr Kopta <pkopta@man.poznan.pl>
+	* slurm_drmaa/job.h, slurm_drmaa/job.c, slurm_drmaa/session.c:
+	changed of handling "$drmaa_inc_ph" placeholder
