@@ -167,6 +167,7 @@ slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc)
 	fsd_free(job_desc->work_dir);
 	fsd_free(job_desc->exc_nodes);
 	fsd_free(job_desc->gres);
+	fsd_free(job_desc->array_inx);
 	
 	fsd_log_return(( "" ));
 }

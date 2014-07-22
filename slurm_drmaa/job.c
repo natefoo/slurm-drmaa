@@ -260,16 +260,14 @@ slurmdrmaa_job_create_req(
 		fsd_drmaa_session_t *session,
 		const fsd_template_t *jt,
 		fsd_environ_t **envp,
-		job_desc_msg_t * job_desc,
-		int n_job /* ~job_step */
-		)
+		job_desc_msg_t * job_desc)
 {
 	fsd_expand_drmaa_ph_t *volatile expand = NULL;
 
 	TRY
 	 {
-		expand = fsd_expand_drmaa_ph_new( NULL, NULL, fsd_asprintf("%d",n_job) );
-		slurmdrmaa_job_create( session, jt, envp, expand, job_desc, n_job);
+		expand = fsd_expand_drmaa_ph_new( NULL, NULL, fsd_strdup("%a") );
+		slurmdrmaa_job_create( session, jt, envp, expand, job_desc );
 	 }
 	EXCEPT_DEFAULT
 	 {
@@ -307,8 +305,7 @@ slurmdrmaa_job_create(
 		const fsd_template_t *jt,
 		fsd_environ_t **envp,
 		fsd_expand_drmaa_ph_t *expand, 
-		job_desc_msg_t * job_desc,
-		int n_job
+		job_desc_msg_t * job_desc
 		)
 {
 	const char *input_path_orig = NULL;
@@ -324,10 +321,6 @@ slurmdrmaa_job_create(
 	const char *value;
 	const char *const *vector;
 	const char *job_category = "default";
-	
-	slurmdrmaa_init_job_desc( job_desc );
-
-	slurm_init_job_desc_msg( job_desc );
 	
 	job_desc->user_id = getuid();
 	job_desc->group_id = getgid();
