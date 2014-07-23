@@ -75,7 +75,7 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 			case DRMAA_CONTROL_RELEASE:
 			  /* change priority back*/
 			  	slurm_init_job_desc_msg(&job_desc);
-				job_desc.priority = 1;
+				job_desc.priority = INFINITE;
 				job_desc.job_id = atoi(self->job_id);
 				if(slurm_update_job(&job_desc) == -1) {
 					fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_update_job error: %s,job_id: %s",slurm_strerror(slurm_get_errno()),self->job_id);
