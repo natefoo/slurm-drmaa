@@ -1,3 +1,6 @@
+2014-09-05 E V <eliventer@gmail.com>
+	* slurm_drmaa/session.c: job array of size 1 patch
+
 2014-04-22 Michael Gutteridge <michael.gutteridge@gmail.com>
 	* slurm_drmaa/job.c, slurm_drmaa/util.c: cpus-per-task patch
 
