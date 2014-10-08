@@ -73,7 +73,7 @@ fi
 AC_MSG_RESULT([$with_slurm_lib$ax_slurm_msg])
 
 
-SLURM_LIBS="-lslurm "
+SLURM_LIBS="-lslurmdb -lslurm "
 SLURM_LDFLAGS="-L${with_slurm_lib}"
 
 

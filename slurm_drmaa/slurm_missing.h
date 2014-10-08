@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id: $ */
 /*
  * PSNC DRMAA for SLURM
  * Copyright (C) 2011 Poznan Supercomputing and Networking Center
@@ -17,22 +17,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LL_DRMAA__UTIL_H
-#define __LL_DRMAA__UTIL_H
+#ifndef __LL_DRMAA__SLURM_MISSING_H
+#define __LL_DRMAA__SLURM_MISSING_H
 
-#ifdef HAVE_CONFIG_H
-#	include <config.h>
-#endif
+extern slurmdb_cluster_rec_t *working_cluster_rec;
+extern List slurmdb_get_info_cluster(char *cluster_name);
+extern void * slurm_list_pop (List l);
+extern void slurmdb_destroy_cluster_rec(void *object);
 
-#include <slurm/slurmdb.h>
-
-/* Parse time to minutes */
-unsigned slurmdrmaa_datetime_parse( const char *string );
-
-void slurmdrmaa_init_job_desc(job_desc_msg_t *job_desc);
-void slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc);
-void slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value);
-void slurmdrmaa_set_cluster(const char * value);
-int slurmdrmaa_parse_job_id_cluster(const char *original_job_id, char **job_id, char **cluster);
-
-#endif /* __SLURM_DRMAA__UTIL_H */
+#endif /* __SLURM_DRMAA__SLURM_MISSING_H */
