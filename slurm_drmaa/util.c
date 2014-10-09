@@ -25,6 +25,7 @@
 #include <drmaa_utils/datetime.h>
 #include <drmaa_utils/datetime_impl.h>
 #include <slurm_drmaa/slurm_missing.h>
+#include <slurm_drmaa/slurm_drmaa.h>
 
 #ifndef lint
 static char rcsid[]
@@ -621,6 +622,65 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 	fsd_log_return(( "" ));
 }
 
+char *
+slurmdrmaa_set_job_id(job_id_spec_t *job_id_spec)
+{
+	char *ctxt = NULL;
+	char *job_id_copy = fsd_strdup(job_id_spec->original);
+	char *job_id_r = NULL;
+
+	fsd_log_enter(( "({job_id=%s})", job_id_copy));
+
+	if (strchr(job_id_copy, '.'))
+	{
+		job_id_spec->job_id = strtok_r(job_id_copy, ".", &ctxt);
+		job_id_spec->cluster = strtok_r(NULL, ".", &ctxt);
+		fsd_log_debug(( "job_id = %s", job_id_spec->job_id ));
+		fsd_log_debug(( "cluster = %s", job_id_spec->cluster ));
+		job_id_r = job_id_spec->job_id;
+		slurmdrmaa_set_cluster(job_id_spec->cluster);
+	}
+	else
+	{
+		job_id_spec->job_id = NULL;
+		job_id_spec->cluster = NULL;
+		fsd_free(job_id_copy);
+		job_id_r = job_id_spec->original;
+	}
+
+	fsd_log_return(( "; job_id=%s", job_id_r ));
+
+	return job_id_r;
+}
+
+char *
+slurmdrmaa_unset_job_id(job_id_spec_t *job_id_spec)
+{
+
+	if (job_id_spec->job_id)
+	{
+		fsd_log_enter(( "({job_id=%s})", job_id_spec->job_id ));
+		fsd_free(job_id_spec->job_id); /* also frees cluster */
+		job_id_spec->job_id = NULL;
+		job_id_spec->cluster = NULL;
+	}
+	else
+	{
+		fsd_log_enter(( "({job_id=%s})", job_id_spec->job_id ));
+	}
+
+	if (working_cluster_rec)
+	{
+		slurmdb_destroy_cluster_rec(working_cluster_rec);
+		working_cluster_rec = NULL;
+		fsd_log_debug(("unset working_cluster_rec"));
+	}
+
+	fsd_log_return(( "; job_id=%s", job_id_spec->original ));
+
+	return job_id_spec->original;
+}
+
 void
 slurmdrmaa_set_cluster(const char * value)
 {
@@ -657,33 +717,4 @@ slurmdrmaa_set_cluster(const char * value)
 	END_TRY
 
 	fsd_log_return(( "" ));
-}
-
-int
-slurmdrmaa_parse_job_id_cluster(const char *original_job_id, char **job_id, char **cluster)
-{
-	int rc = 0;
-	char *ctxt = NULL;
-	char *job_id_copy = fsd_strdup(original_job_id);
-
-	fsd_log_enter(( "({original_job_id=%s})", original_job_id));
-
-	if (strchr(original_job_id, '.'))
-	{
-		*job_id = strtok_r(job_id_copy, ".", &ctxt);
-		*cluster = strtok_r(NULL, ".", &ctxt);
-		fsd_log_debug(( "job_id = %s", *job_id ));
-		fsd_log_debug(( "cluster = %s", *cluster ));
-		rc = 1;
-	}
-	else
-	{
-		*job_id = NULL;
-		*cluster = NULL;
-		fsd_free(job_id_copy);
-	}
-
-	fsd_log_return(( "; rc=%d", rc ));
-
-	return rc;
 }

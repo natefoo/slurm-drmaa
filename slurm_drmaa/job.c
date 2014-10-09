@@ -33,6 +33,7 @@
 #include <slurm_drmaa/session.h>
 #include <slurm_drmaa/util.h>
 #include <slurm_drmaa/slurm_missing.h>
+#include <slurm_drmaa/slurm_drmaa.h>
 
 #include <slurm/slurmdb.h>
 #include <stdint.h>
@@ -42,12 +43,16 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 {
 	slurmdrmaa_job_t *slurm_self = (slurmdrmaa_job_t*)self;
 	job_desc_msg_t job_desc;
+	job_id_spec_t job_id_spec;
 
 	fsd_log_enter(( "({job_id=%s}, action=%d)", self->job_id, action ));
 
 	fsd_mutex_lock( &self->session->drm_connection_mutex );
 	TRY
 	 {
+		job_id_spec.original = self->job_id;
+		self->job_id = slurmdrmaa_set_job_id(&job_id_spec);
+
 		switch( action )
 		 {
 			case DRMAA_CONTROL_SUSPEND:
@@ -97,6 +102,7 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 	 }
 	FINALLY
 	 {
+		self->job_id = slurmdrmaa_unset_job_id(&job_id_spec);
 		fsd_mutex_unlock( &self->session->drm_connection_mutex );
 	 }
 	END_TRY
@@ -110,22 +116,16 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 {
 	job_info_msg_t *job_info = NULL;
 	slurmdrmaa_job_t * slurm_self = (slurmdrmaa_job_t *) self;
-	char *job_id = NULL;
-	char *cluster = NULL;
-	char *job_id_save = NULL;
+	job_id_spec_t job_id_spec;
 
 	fsd_log_enter(( "({job_id=%s})", self->job_id ));
-
-	if (slurmdrmaa_parse_job_id_cluster(self->job_id, &job_id, &cluster))
-	{
-		job_id_save = self->job_id;
-		self->job_id = job_id;
-		slurmdrmaa_set_cluster(cluster);
-	}
 
 	fsd_mutex_lock( &self->session->drm_connection_mutex );
 	TRY
 	{
+		job_id_spec.original = self->job_id;
+		self->job_id = slurmdrmaa_set_job_id(&job_id_spec);
+
 		if ( slurm_load_job( &job_info, fsd_atoi(self->job_id), SHOW_ALL) ) {
 			int _slurm_errno = slurm_get_errno();
 
@@ -220,20 +220,7 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 	{
 		if(job_info != NULL)
 			slurm_free_job_info_msg (job_info);
-
-		if (job_id_save)
-		{
-			self->job_id = job_id_save;
-			fsd_free(job_id); /* also frees cluster */
-			fsd_log_debug(("# reset job id = %s",self->job_id));
-		}
-
-		if (working_cluster_rec)
-		{
-			slurmdb_destroy_cluster_rec(working_cluster_rec);
-			working_cluster_rec = NULL;
-		}
-
+		self->job_id = slurmdrmaa_unset_job_id(&job_id_spec);
 		fsd_mutex_unlock( &self->session->drm_connection_mutex );
 	}
 	END_TRY
@@ -244,18 +231,12 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 static void
 slurmdrmaa_job_on_missing( fsd_job_t *self )
 {
-	char *job_id = NULL;
-	char *cluster = NULL;
-	char *job_id_save = NULL;
+	job_id_spec_t job_id_spec;
 
 	fsd_log_enter(( "({job_id=%s})", self->job_id ));
 
-	if (slurmdrmaa_parse_job_id_cluster(self->job_id, &job_id, &cluster))
-	{
-		job_id_save = self->job_id;
-		self->job_id = job_id;
-		slurmdrmaa_set_cluster(cluster);
-	}
+	job_id_spec.original = self->job_id;
+	self->job_id = slurmdrmaa_set_job_id(&job_id_spec);
 
 	fsd_log_warning(( "Job %s missing from DRM queue", self->job_id ));
 
@@ -275,18 +256,7 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 	fsd_cond_broadcast( &self->status_cond);
 	fsd_cond_broadcast( &self->session->wait_condition );
 
-	if (job_id_save)
-	{
-		self->job_id = job_id_save;
-		fsd_free(job_id); /* also frees cluster */
-		fsd_log_debug(("# reset job id = %s",self->job_id));
-	}
-
-	if (working_cluster_rec)
-	{
-		slurmdb_destroy_cluster_rec(working_cluster_rec);
-		working_cluster_rec = NULL;
-	}
+	self->job_id = slurmdrmaa_unset_job_id(&job_id_spec);
 
 	fsd_log_return(( "; job_ps=%s, exit_status=%d", drmaa_job_ps_to_str(self->state), self->exit_status ));
 }
