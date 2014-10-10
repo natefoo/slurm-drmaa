@@ -20,9 +20,10 @@
 #ifndef __LL_DRMAA__SLURM_MISSING_H
 #define __LL_DRMAA__SLURM_MISSING_H
 
-extern slurmdb_cluster_rec_t *working_cluster_rec;
+#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(14,11,0)
 extern List slurmdb_get_info_cluster(char *cluster_name);
 extern void * slurm_list_pop (List l);
 extern void slurmdb_destroy_cluster_rec(void *object);
+#endif
 
 #endif /* __SLURM_DRMAA__SLURM_MISSING_H */
