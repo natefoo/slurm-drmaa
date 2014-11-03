@@ -81,7 +81,7 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 			case DRMAA_CONTROL_RELEASE:
 			  /* change priority back*/
 			  	slurm_init_job_desc_msg(&job_desc);
-				job_desc.priority = 1;
+				job_desc.priority = INFINITE;
 				job_desc.job_id = atoi(self->job_id);
 				if(slurm_update_job(&job_desc) == -1) {
 					fsd_exc_raise_fmt(	FSD_ERRNO_INTERNAL_ERROR,"slurm_update_job error: %s,job_id: %s",slurm_strerror(slurm_get_errno()),self->job_id);
@@ -144,12 +144,10 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 				case JOB_PENDING:
 					switch(job_info->job_array[0].state_reason)
 					{
-						#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 						case WAIT_HELD_USER:   /* job is held by user */
 							fsd_log_debug(("interpreting as DRMAA_PS_USER_ON_HOLD"));
 							self->state = DRMAA_PS_USER_ON_HOLD;
 							break;
-						#endif
 						case WAIT_HELD:  /* job is held by administrator */
 							fsd_log_debug(("interpreting as DRMAA_PS_SYSTEM_ON_HOLD"));
 							self->state = DRMAA_PS_SYSTEM_ON_HOLD;
@@ -185,9 +183,7 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 				case JOB_FAILED:
 				case JOB_TIMEOUT:
 				case JOB_NODE_FAIL:
-				#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
 				case JOB_PREEMPTED:
-				#endif
 					fsd_log_debug(("interpreting as DRMAA_PS_FAILED"));
 					self->state = DRMAA_PS_FAILED;
 					self->exit_status = job_info->job_array[0].exit_code;
@@ -283,16 +279,14 @@ slurmdrmaa_job_create_req(
 		fsd_drmaa_session_t *session,
 		const fsd_template_t *jt,
 		fsd_environ_t **envp,
-		job_desc_msg_t * job_desc,
-		int n_job /* ~job_step */
-		)
+		job_desc_msg_t * job_desc)
 {
 	fsd_expand_drmaa_ph_t *volatile expand = NULL;
 
 	TRY
 	 {
-		expand = fsd_expand_drmaa_ph_new( NULL, NULL, fsd_asprintf("%d",n_job) );
-		slurmdrmaa_job_create( session, jt, envp, expand, job_desc, n_job);
+		expand = fsd_expand_drmaa_ph_new( NULL, NULL, fsd_strdup("%a") );
+		slurmdrmaa_job_create( session, jt, envp, expand, job_desc );
 	 }
 	EXCEPT_DEFAULT
 	 {
@@ -330,8 +324,7 @@ slurmdrmaa_job_create(
 		const fsd_template_t *jt,
 		fsd_environ_t **envp,
 		fsd_expand_drmaa_ph_t *expand, 
-		job_desc_msg_t * job_desc,
-		int n_job
+		job_desc_msg_t * job_desc
 		)
 {
 	const char *input_path_orig = NULL;
@@ -347,10 +340,6 @@ slurmdrmaa_job_create(
 	const char *value;
 	const char *const *vector;
 	const char *job_category = "default";
-	
-	slurmdrmaa_init_job_desc( job_desc );
-
-	slurm_init_job_desc_msg( job_desc );
 	
 	job_desc->user_id = getuid();
 	job_desc->group_id = getgid();

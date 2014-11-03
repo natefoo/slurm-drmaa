@@ -95,16 +95,10 @@ static int slurmdrmaa_mail_type_parse(const char *mail_type_str)
 		rc = MAIL_JOB_END;
 	else if (strcasecmp(mail_type_str, "FAIL") == 0)
 		rc = MAIL_JOB_FAIL;
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 	else if (strcasecmp(mail_type_str, "REQUEUE") == 0)
 		rc = MAIL_JOB_REQUEUE;
-#endif
 	else if (strcasecmp(mail_type_str, "ALL") == 0)
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 		rc = MAIL_JOB_BEGIN | MAIL_JOB_END | MAIL_JOB_FAIL | MAIL_JOB_REQUEUE;
-#else
-		rc = MAIL_JOB_BEGIN | MAIL_JOB_END | MAIL_JOB_FAIL;
-#endif
 	else {
 		fsd_log_error(("Unknown mail type: %s", mail_type_str));
 	}
@@ -176,9 +170,8 @@ slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc)
 	fsd_free(job_desc->std_err);	
 	fsd_free(job_desc->work_dir);
 	fsd_free(job_desc->exc_nodes);
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 	fsd_free(job_desc->gres);
-#endif
+	fsd_free(job_desc->array_inx);
 	
 	fsd_log_return(( "" ));
 }
@@ -224,45 +217,26 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			job_desc->shared = 0;
 			break;
 		case SLURM_NATIVE_MEM:
-		#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
-			if(job_desc->job_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->job_min_memory) {
-				fsd_log_debug(("# job_min_memory = %s",value));
-				job_desc->job_min_memory = fsd_atoi(value);
-			}
-		#else
 			if(job_desc->pn_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->pn_min_memory) {
 				fsd_log_debug(("# pn_min_memory (MEM_PER_CPU) = %s",value));
 				job_desc->pn_min_memory = fsd_atoi(value) | MEM_PER_CPU;
 			}
-		#endif
 			else { 
 				fsd_log_debug(("mem value defined lower or equal to mem-per-cpu or value defined before"));
 			}
 			break;
 		case SLURM_NATIVE_MEM_PER_CPU:
-		#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
-			if(job_desc->job_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->job_min_memory) {
-				fsd_log_debug(("# job_min_memory = %s",value));
-				job_desc->job_min_memory = fsd_atoi(value);
-			}
-		#else
 			if(job_desc->pn_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->pn_min_memory) {
 				fsd_log_debug(("# pn_min_memory (MEM_PER_CPU) = %s",value));
 				job_desc->pn_min_memory = fsd_atoi(value) | MEM_PER_CPU;
 			}
-		#endif
 			else { 
 				fsd_log_debug(("mem-per-cpu value defined lower or equal to mem or value defined before"));
 			}
 			break;
 		case SLURM_NATIVE_MINCPUS:
-		#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(2,2,0)
-			fsd_log_debug(("# job_min_cpus = %s",value));
-			job_desc->job_min_cpus = fsd_atoi(value);
-		#else
 			fsd_log_debug(("# pn_min_cpus = %s",value));
 			job_desc->pn_min_cpus = fsd_atoi(value);
-		#endif
 			break;
 		case SLURM_NATIVE_NODELIST:
 			fsd_free(job_desc->req_nodes);
@@ -325,12 +299,8 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			job_desc->time_limit = slurmdrmaa_datetime_parse(value); 
 			break;	
 		case SLURM_NATIVE_GRES:
-			#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
 			fsd_log_debug(("# gres = %s",value));
 			job_desc->gres = fsd_strdup(value);
-			#else
-			fsd_log_error(("GRES not supported in this version of SLURM."));
-			#endif
 			break;
 		case SLURM_NATIVE_CLUSTERS:
 			#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,2,0)
@@ -362,11 +332,11 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_TMP:
 			fsd_log_debug(("# tmp = %s", value));
-				#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(2,3,0)
-					job_desc->pn_min_tmp_disk = fsd_atoi(value);
-					#else
-					job_desc->job_min_tmp_disk = fsd_atoi(value);
-					#endif
+			job_desc->pn_min_tmp_disk = fsd_atoi(value);
+			break;
+		case SLURM_NATIVE_DEPENDENCY:
+			fsd_log_debug(("# dependency = %s", value));
+			job_desc->dependency = fsd_strdup(value);
 			break;
 		case SLURM_NATIVE_DEPENDENCY:
 			fsd_log_debug(("# dependency = %s", value));

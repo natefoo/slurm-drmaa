@@ -1,0 +1,18 @@
+2015-04-01 Rasmus Rohde <rohde@duff.dk>
+	* slurm_drmaa/util.c: dependency option
+
+2014-09-05 E V <eliventer@gmail.com>
+	* slurm_drmaa/session.c: job array of size 1 patch
+
+2014-04-22 Michael Gutteridge <michael.gutteridge@gmail.com>
+	* slurm_drmaa/job.c, slurm_drmaa/util.c: cpus-per-task patch
+
+2014-07-21 E V <eliventer@gmail.com>
+	* slurm_drmaa/job.c, slurm_drmaa/session.c: job array patch
+
+2014-07-22 Piotr Kopta <pkopta@man.poznan.pl>
+	* slurm_drmaa/job.h, slurm_drmaa/job.c, slurm_drmaa/session.c:
+	changed of handling "$drmaa_inc_ph" placeholder
+
+2013-07-23 E V <eliventer@gmail.com>
+	* slurm_drmaa/job.c: control release fix
