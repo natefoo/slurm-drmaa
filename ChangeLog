@@ -1,3 +1,6 @@
+2015-04-01 Rasmus Rohde <rohde@duff.dk>
+	* slurm_drmaa/util.c: dependency option
+
 2014-09-05 E V <eliventer@gmail.com>
 	* slurm_drmaa/session.c: job array of size 1 patch
 
