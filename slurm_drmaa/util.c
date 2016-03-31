@@ -128,7 +128,9 @@ enum slurm_native {
 	SLURM_NATIVE_NO_REQUEUE,
 	SLURM_NATIVE_EXCLUDE,
 	SLURM_NATIVE_TMP,
-	SLURM_NATIVE_DEPENDENCY
+	SLURM_NATIVE_DEPENDENCY,
+	SLURM_NATIVE_STDOUT,
+	SLURM_NATIVE_STDERR
 };
 
 void
@@ -321,6 +323,14 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(("# dependency = %s", value));
 			job_desc->dependency = fsd_strdup(value);
 			break;
+		case SLURM_NATIVE_STDOUT:
+			fsd_log_debug(("# stdout = %s", value));
+			job_desc->std_out = fsd_strdup(value);
+			break;
+		case SLURM_NATIVE_STDERR:
+			fsd_log_debug(("# stderr = %s", value));
+			job_desc->std_err = fsd_strdup(value);
+			break;
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
 	}
@@ -502,12 +512,18 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'd':
 						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_DEPENDENCY, arg);
 						break;
+					case 'e':
+						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_STDERR, arg);
+						break;
 					case 'k':
 						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_NO_KILL, NULL);
 						break;
 					case 'N' :	
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NODES, arg);
 						break;	
+					case 'o':
+						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_STDOUT, arg);
+						break;
 					case 'p' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_PARTITION, arg);
 						break;
