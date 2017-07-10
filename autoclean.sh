@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id$
 
 echo "Removing all generated files. ($PWD)"
 

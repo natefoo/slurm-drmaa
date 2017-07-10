@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id$
 
 run() {
 	echo "running $@ ($PWD)"

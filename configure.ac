@@ -1,6 +1,6 @@
 AC_INIT([PSNC DRMAA for SLURM], [1.0.6], [mamonski@man.poznan.pl], [slurm-drmaa])
 AC_PREREQ(2.59)
-AC_REVISION([$Id$])
+AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
 PSNC DRMAA for SLURM
 Copyright (C) 2011 Poznan Supercomputing and Networking Center

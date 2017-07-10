@@ -1,4 +1,3 @@
-dnl $Id$
 
 dnl
 dnl Check for libs/cppflags needed for POSIX Threads

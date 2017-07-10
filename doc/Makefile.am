@@ -1,4 +1,3 @@
-# $Id$
 #
 # PSNC DRMAA for LoadLeveler
 # Copyright (C) 2011 Poznan Supercomputing and Networking Center

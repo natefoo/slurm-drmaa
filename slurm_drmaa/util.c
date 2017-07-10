@@ -27,14 +27,6 @@
 #include <slurm_drmaa/slurm_missing.h>
 #include <slurm_drmaa/slurm_drmaa.h>
 
-#ifndef lint
-static char rcsid[]
-#	ifdef __GNUC__
-		__attribute__ ((unused))
-#	endif
-	= "$Id$";
-#endif
-
 unsigned int
 slurmdrmaa_datetime_parse( const char *string )
 {

@@ -1,4 +1,3 @@
-/* $Id$ */
 /*
  * PSNC DRMAA for SLURM
  * Copyright (C) 2011 Poznan Supercomputing and Networking Center
