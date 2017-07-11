@@ -428,10 +428,12 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 		else if(strcmp(name,"gres") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_GRES,value);
 		}
+#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(15,8,0)
 		else if(strcmp(name,"clusters") == 0) {
-      fsd_log_debug(("# clusters = %s",value));
-      *clusters_opt = fsd_strdup(value);
+			fsd_log_debug(("# clusters = %s",value));
+			*clusters_opt = fsd_strdup(value);
 		}
+#endif
 		else if(strcmp(name,"no-kill") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_KILL,NULL);
 		}
@@ -476,11 +478,12 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 	char * volatile native_spec_copy = fsd_strdup(native_specification);
 	char * ctxt = NULL;
 	int opt = 0;
-  /* cluster handling occurs in the slurmdb context and has no member in
-   * job_desc, and for multicluster selection to work, readiness must be
-   * checked after job constraints are finalized */
-  char *clusters_opt = NULL;
-		
+	/* cluster handling occurs in the slurmdb context and has no member in
+	 * job_desc, and for multicluster selection to work, readiness must be
+	 * checked after job constraints are finalized
+	 */
+	char *clusters_opt = NULL;
+
 	fsd_log_enter(( "" ));
 	TRY
 	 {
@@ -535,10 +538,12 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'L' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_LICENSES, arg);
 						break;							
+#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(15,8,0)
 					case 'M' :
-            fsd_log_debug(("# clusters = %s",value));
-            clusters_opt = fsd_strdup(arg);
+						fsd_log_debug(("# clusters = %s",value));
+						clusters_opt = fsd_strdup(arg);
 						break;
+#endif
 					default :
 							fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
 									"Invalid native specification: %s (Unsupported option: -%c)",
@@ -586,11 +591,13 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 	 }
 	END_TRY
 
-  if (clusters_opt)
-  {
-    slurmdb_get_first_avail_cluster(job_desc, clusters_opt, &working_cluster_rec);
-    fsd_free(clusters_opt);
-  }
+	if (clusters_opt)
+	{
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(15,8,0)
+		slurmdb_get_first_avail_cluster(job_desc, clusters_opt, &working_cluster_rec);
+#endif
+		fsd_free(clusters_opt);
+	}
 
 	fsd_log_return(( "" ));
 }
