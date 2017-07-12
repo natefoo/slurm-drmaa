@@ -6,16 +6,16 @@ PSNC DRMAA for SLURM
 Introduction
 ------------
 
-PSNC DRMAA for [Simple Linux Utility for Resource Management (SLURM)](http://www.schedmd.com/slurmdocs/slurm.html) is an implementation of [Open Grid Forum](http://www.gridforum.org/) [DRMAA 1.0](http://www.drmaa.org/) (Distributed Resource Management Application API) [specification](http://www.ogf.org/documents/GFD.133.pdf) for submission and control of jobs to SLURM. Using DRMAA, grid applications builders, portal developers and ISVs can use the same high-level API to link their software with different cluster/resource management systems.
+PSNC DRMAA for [Slurm Workload Manager (Slurm)](https://slurm.schedmd.com/) is an implementation of [Open Grid Forum](http://www.gridforum.org/) [DRMAA 1.0](http://www.drmaa.org/) (Distributed Resource Management Application API) [specification](http://www.ogf.org/documents/GFD.133.pdf) for submission and control of jobs to Slurm. Using DRMAA, grid applications builders, portal developers and ISVs can use the same high-level API to link their software with different cluster/resource management systems.
 
-This software also enables the integration of [QCG-Computing](http://www.qoscosgrid.org/trac/qcg-computing/) with the underlying SLURM system for remote multi-user job submission and control over Web Services.
+This software also enables the integration of [QCG-Computing](http://www.qoscosgrid.org/trac/qcg-computing/) with the underlying Slurm system for remote multi-user job submission and control over Web Services.
 
 Although this fork is not the canonical source of slurm-drmaa, it has become mildly popular among the [Galaxy](http://galaxyproject.org/) community, especially as development on PSNC slurm-drmaa has slowed folliwing the death of the previous mantainer, Mariusz Mamonski. I will do my best to incorporate both upstream and contributed changes, but credit belongs to the original authors (found below). In this repository, I've imported the SVN history and attempted to attribute contributions correctly.
 
 Download
 --------
 
-DRMAA for SLURM is distributed as a source package which can be downloaded via the [Downloads](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads) section.
+DRMAA for Slurm is distributed as a source package which can be downloaded via the [Releases](https://github.com/natefoo/slurm-drmaa/releases) section.
 
 Installation
 ------------
@@ -27,21 +27,21 @@ $ ./configure [options] && make
 $ sudo make install
 ```
 
-The library was tested with Simple Linux Utility for Resource Management versions 2.1.13, 2.2 and 2.3.3. If you encountered any problems using the library on the different systems, please use the [contact](/trac/slurm-drmaa/wiki/WikiStart#contact) e-mails for reporting the problem.
+The library was tested with Slurm versions 14.03, 14.11, and 15.08. If you encountered any problems using the library on the different systems, please see the [contact](#contact) section.
 
 Notable `./configure` script options:
 
 > `--with-slurm-inc` SLURM\_INCLUDE\_PATH
 >
-> > Path to SLURM header files (i.e. directory containing `slurm/slurm.h` ). By default the library tries to guess the `SLURM_INCLUDE_PATH` and `SLURM_LIBRARY_PATH` based on location of the `srun` executable.
+> > Path to Slurm header files (i.e. directory containing `slurm/slurm.h` ). By default the library tries to guess the `SLURM_INCLUDE_PATH` and `SLURM_LIBRARY_PATH` based on location of the `srun` executable.
 
 > `--with-slurm-lib` SLURM\_LIBRARY\_PATH
 >
-> > Path to SLURM libraries (i.e. directory containing `libslurm.a` ).
+> > Path to Slurm libraries (i.e. directory containing `libslurm.a` ).
 
 > `--prefix` INSTALLATION\_DIRECTORY
 >
-> > Root directory where PSNC DRMAA for SLURM shall be installed. When not given library is installed in `/usr/local`.
+> > Root directory where PSNC DRMAA for Slurm shall be installed. When not given library is installed in `/usr/local`.
 
 > `--enable-debug`
 >
@@ -123,27 +123,28 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | `--no-requeue`                | Specifies that the batch job should not be requeued after node failure                                                           |
 | `-x, --exclude`               | Explicitly exclude certain nodes from the resources granted to the job                                                           |
 | `--tmp`                       | Specify a minimum amount of temporary disk space                                                                                 |
+| `-M, --clusters=`\\names      | Clusters to issue commands to (multiple cluster names may be comma separated)                                                    |
 
 Description of each parameter can be found in `man sbatch`.
 
 Changelog
 ---------
 
--   [1.0.7](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm-drmaa-1.0.7.tar.gz "slurm-drmaa-1.0.7.tar.gz (718.0 KB)") - user supplied (via DRMAA attribute) native specification now takes precedence over the native specification provided in configuration file.
--   [1.0.6](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm-drmaa-1.0.6.tar.gz "slurm-drmaa-1.0.6.tar.gz (731.5 KB)") - added support for `--gres`, `--no-kill`, `--licenses`, `--mail-type=`, `--no-requeue`, `--exclude`, `--tmp` in native specification attribute. Implemented handling of missing jobs.
--   [1.0.5](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm-drmaa-1.0.5.tar.gz "slurm-drmaa-1.0.5.tar.gz (731.6 KB)") - better handling of `--time (-t)` (thanks to Roman Valls Guimera) and added support for `--ntasks (-n)` in native specification attribute. Fixed DRMAA\_V\_EMAIL attribute handling
--   [1.0.4](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm-drmaa-1.0.4.tar.gz "slurm-drmaa-1.0.4.tar.gz (729.0 KB)") - support for SLURM 2.3
--   [1.0.3](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm-drmaa-1.0.3.tar.gz "slurm-drmaa-1.0.3.tar.gz (729.0 KB)") - the `--time` native option support
--   [1.0.2](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm_drmaa-1.0.2.tar.gz "slurm_drmaa-1.0.2.tar.gz (727.5 KB)") - environment variables are now propagated from submission host to the worker nodes
--   [1.0.1](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm_drmaa-1.0.1.tar.gz "slurm_drmaa-1.0.1.tar.gz (709.5 KB)") - added support for SLURM 2.2
--   [1.0.0](http://apps.man.poznan.pl/trac/slurm-drmaa/downloads/slurm_drmaa-1.0.0.tar.gz "slurm_drmaa-1.0.0.tar.gz (708.9 KB)") - first public release
+-   [1.0.7](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.7/slurm-drmaa-1.0.7.tar.gz "slurm-drmaa-1.0.7.tar.gz (718.0 KB)") - user supplied (via DRMAA attribute) native specification now takes precedence over the native specification provided in configuration file.
+-   [1.0.6](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.6/slurm-drmaa-1.0.6.tar.gz "slurm-drmaa-1.0.6.tar.gz (731.5 KB)") - added support for `--gres`, `--no-kill`, `--licenses`, `--mail-type=`, `--no-requeue`, `--exclude`, `--tmp` in native specification attribute. Implemented handling of missing jobs.
+-   [1.0.5](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.5/slurm-drmaa-1.0.5.tar.gz "slurm-drmaa-1.0.5.tar.gz (731.6 KB)") - better handling of `--time (-t)` (thanks to Roman Valls Guimera) and added support for `--ntasks (-n)` in native specification attribute. Fixed DRMAA\_V\_EMAIL attribute handling
+-   [1.0.4](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.4/slurm-drmaa-1.0.4.tar.gz "slurm-drmaa-1.0.4.tar.gz (729.0 KB)") - support for SLURM 2.3
+-   [1.0.3](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.3/slurm-drmaa-1.0.3.tar.gz "slurm-drmaa-1.0.3.tar.gz (729.0 KB)") - the `--time` native option support
+-   [1.0.2](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.2/slurm_drmaa-1.0.2.tar.gz "slurm_drmaa-1.0.2.tar.gz (727.5 KB)") - environment variables are now propagated from submission host to the worker nodes
+-   [1.0.1](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.1/slurm_drmaa-1.0.1.tar.gz "slurm_drmaa-1.0.1.tar.gz (709.5 KB)") - added support for SLURM 2.2
+-   [1.0.0](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.0/slurm_drmaa-1.0.0.tar.gz "slurm_drmaa-1.0.0.tar.gz (708.9 KB)") - first public release
 
 ### Known bugs and limitations
 
-Library covers all [DRMAA 1.0 specification](http://www.ogf.org/documents/GFD.133.pdf) with exceptions listed below. It was successfully tested with [Simple Linux Utility for Resource Management (SLURM) 2.1.13, 2.2 and 2.3.3](https://computing.llnl.gov/linux/slurm/). Known limitations:
+Library covers all [DRMAA 1.0 specification](http://www.ogf.org/documents/GFD.133.pdf) with exceptions listed below. It was successfully tested with [Slurm 14.03, 14.11, and 15.08](https://slurm.schedmd.com/). Known limitations:
 
--   `drmaa_control` options `DRMAA_CONTROL_HOLD`, `DRMAA_CONTROL_RELEASE` are only available for users being SLURM administrators (in version prior 2.2)
--   `drmaa_control` options `DRMAA_CONTROL_SUSPEND`, `DRMAA_CONTROL_RESUME` are only available for users being SLURM administrators
+-   `drmaa_control` options `DRMAA_CONTROL_HOLD`, `DRMAA_CONTROL_RELEASE` are only available for users being Slurm administrators (in version prior 2.2)
+-   `drmaa_control` options `DRMAA_CONTROL_SUSPEND`, `DRMAA_CONTROL_RESUME` are only available for users being Slurm administrators
 -   `drmaa_wct_slimit` not implemented
 -   optional attributes `drmaa_deadline_time`, `drmaa_duration_hlimit`, `drmaa_duration_slimit`, `drmaa_transfer_files` not implemented
 -   The SPANK client side (i.e. not remote) plugins chain is not invoked in DRMAA run job call. For this reason we advice you to use [TASK BLOCKS](http://code.google.com/p/slurm-spank-plugins/wiki/UseEnvSyntax#TASK_BLOCKS) in the `UseEnv` SPANK plugin.
@@ -163,7 +164,7 @@ $ git clone --recursive https://github.com/natefoo/slurm-drmaa.git
 
 ### Developer tools
 
-Although not needed for library user the following tools may be required if you intend to develop PSNC DRMAA for SLURM:
+Although not needed for library user the following tools may be required if you intend to develop PSNC DRMAA for Slurm:
 
 -   GNU autotools
     -   autoconf (tested with version 2.67)
@@ -189,11 +190,11 @@ This library relies heavily on the *Fedstage DRMAA utils* code developed by:
 
 ### Contact
 
-In case of any problems or questions regarding PSNC DRMAA for SLURM do not hesitate to contact us:
+In case of any problems or questions regarding PSNC DRMAA for Slurm do not hesitate to contact us:
 
 -   QosCosGrid Development Team - qcg(at)plgrid.pl
 
-You can submit [issues](https://github.com/natefoo/slurm-drmaa/issues) and [pull requests](https://github.com/natefoo/slurm-drmaa/pulls) for this fork of DRMAA for SLURM in GitHub.
+You can submit [issues](https://github.com/natefoo/slurm-drmaa/issues) and [pull requests](https://github.com/natefoo/slurm-drmaa/pulls) for this fork of DRMAA for Slurm in GitHub.
 
 
 ### Links
@@ -204,7 +205,7 @@ You can submit [issues](https://github.com/natefoo/slurm-drmaa/issues) and [pull
 - [DRMAA 1.0 specification:](http://www.ogf.org/documents/GFD.133.pdf) http://www.ogf.org/documents/GFD.133.pdf
 - [Official DRMAA test-suite:](http://drmaa.org/testsuite.php) http://drmaa.org/testsuite.php
 - [Smoa Computing:](http://apps.man.poznan.pl/trac/smoa-comp) http://apps.man.poznan.pl/trac/smoa-comp
-- [Simple Linux Utility for Resource Management (SLURM):](https://computing.llnl.gov/linux/slurm/) https://computing.llnl.gov/linux/slurm/
+- [Slurm Workload Manager:](https://slurm.schedmd.com/) https://slurm.schedmd.com/
 - [Bison:](http://www.gnu.org/software/bison/) http://www.gnu.org/software/bison/
 
 ### License
