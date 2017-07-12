@@ -1,4 +1,4 @@
-AC_INIT([PSNC DRMAA for SLURM], [1.0.6], [mamonski@man.poznan.pl], [slurm-drmaa])
+AC_INIT([PSNC DRMAA for SLURM], m4_esyscmd([echo -n 1.2.0-dev. ; git rev-parse --short HEAD | tr -d '\n']), [mamonski@man.poznan.pl], [slurm-drmaa])
 AC_PREREQ(2.59)
 AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
@@ -21,9 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ])
 
 SLURM_DRMAA_MAJOR=1
-SLURM_DRMAA_MINOR=0
-SLURM_DRMAA_MICRO=6
-SLURM_DRMAA_VERSION_INFO=1:6:0
+SLURM_DRMAA_MINOR=2
+SLURM_DRMAA_MICRO=0
+SLURM_DRMAA_VERSION_INFO=1:8:0
 AC_SUBST([SLURM_DRMAA_MAJOR])
 AC_SUBST([SLURM_DRMAA_MINOR])
 AC_SUBST([SLURM_DRMAA_MICRO])
@@ -34,6 +34,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([scripts])
 
 AM_INIT_AUTOMAKE
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 # command-line arguments:
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug],

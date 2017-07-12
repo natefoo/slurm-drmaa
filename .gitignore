@@ -17,6 +17,7 @@ libtool.m4
 ltversion.m4
 lt~obsolete.m4
 ltoptions.m4
+ltmain.sh
 readme.html
 readme.tex
 .libs
