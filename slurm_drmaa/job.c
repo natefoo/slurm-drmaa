@@ -179,6 +179,8 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 					fsd_log_debug(("interpreting as DRMAA_PS_FAILED (aborted)"));
 					self->state = DRMAA_PS_FAILED;
 					self->exit_status = -1;
+					fsd_log_debug(("exit_status (set internally) = %d -> %d",self->exit_status, WEXITSTATUS(self->exit_status)));
+					break;
 				case JOB_FAILED:
 				case JOB_TIMEOUT:
 				case JOB_NODE_FAIL:
