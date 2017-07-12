@@ -23,7 +23,8 @@ libdrmaa_la_SOURCES = \
  drmaa.c \
  job.c job.h \
  session.c session.h \
- util.c util.h
+ util.c util.h \
+ slurm_drmaa.h slurm_missing.h
 libdrmaa_la_CPPFLAGS = @SLURM_INCLUDES@ -I$(top_srcdir)/drmaa_utils/ 
 if GCC
 libdrmaa_la_CPPFLAGS += -Wno-long-long 
