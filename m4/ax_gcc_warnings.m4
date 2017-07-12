@@ -30,7 +30,7 @@ if test x$GCC == xyes; then
 	AC_MSG_CHECKING([whether gcc accepts -Wno-missing-field-initializers])
 	CFLAGS="$CFLAGS_save -Wall -Wextra -Wno-missing-field-initializers"
 	ax_gcc_warnings_src="int main(){ return 0; }"
-	AC_COMPILE_IFELSE([$ax_gcc_warnings_src],
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE([$ax_gcc_warnings_src])],
 		[GCC_W_NO_MISSING_FIELD_INITIALIZERS="-Wno-missing-field-initializers"
 		AC_MSG_RESULT([yes])],
 		[GCC_W_NO_MISSING_FIELD_INITIALIZERS="-Wno-extra"
@@ -38,7 +38,7 @@ if test x$GCC == xyes; then
 
 	AC_MSG_CHECKING([whether gcc accepts -Wno-format-zero-length])
 	CFLAGS="$CFLAGS_save -Wno-format-zero-length"
-	AC_COMPILE_IFELSE([$ax_gcc_warnings_src],
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE([$ax_gcc_warnings_src])],
 		[GCC_W_NO_FORMAT_ZERO_LENGTH="-Wno-format-zero-length"
 		AC_MSG_RESULT([yes])],
 		[GCC_W_NO_FORMAT_ZERO_LENGTH="-Wno-format"
