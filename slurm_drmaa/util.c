@@ -321,10 +321,6 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			fsd_log_debug(("# dependency = %s", value));
 			job_desc->dependency = fsd_strdup(value);
 			break;
-		case SLURM_NATIVE_DEPENDENCY:
-			fsd_log_debug(("# dependency = %s", value));
-			job_desc->dependency = fsd_strdup(value);
-			break;
 		default:
 			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,"Invalid attribute");
 	}
