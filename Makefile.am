@@ -20,6 +20,8 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = \
  autoclean.sh \
  autogen.sh \
+ README.md \
+ slurm-drmaa.spec \
  m4/missing-dev-prog.sh
 
 SUBDIRS = drmaa_utils slurm_drmaa 

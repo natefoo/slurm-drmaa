@@ -44,5 +44,8 @@ elif [ -f config.log ]; then
 			 2>/dev/null`
 fi
 
+eval `grep ^PACKAGE_VERSION= configure | sed -e 's/-/_/g'`
+sed -i -e "s/^\(Version:\s*\).*$/\1$PACKAGE_VERSION/" slurm-drmaa.spec
+
 (cd drmaa_utils && run sh autogen.sh "$@")
 run ./configure ${args}
