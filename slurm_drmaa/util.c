@@ -209,8 +209,8 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_MEM:
 			if(job_desc->pn_min_memory == NO_VAL ||  fsd_atoi(value) > (int)job_desc->pn_min_memory) {
-				fsd_log_debug(("# pn_min_memory (MEM_PER_CPU) = %s",value));
-				job_desc->pn_min_memory = fsd_atoi(value) | MEM_PER_CPU;
+				fsd_log_debug(("# pn_min_memory = %s",value));
+				job_desc->pn_min_memory = fsd_atoi(value);
 			}
 			else { 
 				fsd_log_debug(("mem value defined lower or equal to mem-per-cpu or value defined before"));
