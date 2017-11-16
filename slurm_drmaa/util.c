@@ -201,7 +201,7 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_CPUS_PER_TASK:
 			fsd_log_debug(( "# cpus_per_task = %s", value));
-            job_desc->cpus_per_task = fsd_atoi(value);
+			job_desc->cpus_per_task = fsd_atoi(value);
 			break;
 		case SLURM_NATIVE_EXCLUSIVE:
 			fsd_log_debug(( "# exclusive -> shared = 0"));
@@ -237,7 +237,7 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 		case SLURM_NATIVE_NODES:
 			ptr = strdup(value);
 			
-			if((token = strtok_r(ptr,"=",&rest)) == NULL){
+			if((token = strtok_r(ptr,"-",&rest)) == NULL){
 				fsd_log_error(("strtok_r returned NULL"));
 			}
 						
