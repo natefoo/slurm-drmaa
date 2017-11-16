@@ -130,6 +130,9 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 
 			if (_slurm_errno == ESLURM_INVALID_JOB_ID) {
 				self->on_missing(self);
+			} else if (_slurm_errno == SLURM_PROTOCOL_SOCKET_IMPL_TIMEOUT ||
+				   _slurm_errno == SLURMCTLD_COMMUNICATIONS_CONNECTION_ERROR) {
+				fsd_exc_raise_fmt(FSD_ERRNO_DRM_COMMUNICATION_FAILURE,"slurm_load_jobs error: %s,job_id: %s", slurm_strerror(_slurm_errno), self->job_id);
 			} else {
 				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR,"slurm_load_jobs error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
 			}
