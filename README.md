@@ -90,40 +90,40 @@ Native specification
 DRMAA interface allows to pass DRM dependent job submission options. Those options may be specified directly by setting `drmaa_native_specification` job template attribute or indirectly by the `drmaa_job_category` job template attribute. The legal format of the native options looks like:
 
 ```
-  -A My_job_name -s -N 1=10
+  -A My_job_name -s -N 1-10
 ```
 
 List of parameters that can be passed in the `drmaa_native_specification` attribute:
 
-| Native specification          | Description                                                                                                                      |
-|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| `-A, --account=`\\name        | Charge job to specified accounts                                                                                                 |
-| `--acctg-freq`                | Define the job accounting sampling interval                                                                                      |
-| `--comment`                   | An arbitrary comment                                                                                                             |
-| `-C, --constraint=`\\list     | Specify a list of constraints                                                                                                    |
-| `--contiguous`                | If set, then the allocated nodes must form a contiguous set                                                                      |
-| `--exclusive`                 | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
-| `--mem=`\\MB                  | Minimum amount of real memory                                                                                                    |
-| `--mem-per-cpu=`\\MB          | Maximum amount of real memory per allocated cpu required by a job                                                                |
-| `--mincpus=`\\n               | Minimum number of logical processors (threads) per node                                                                          |
-| `-N, --nodes=`\\N             | Number of nodes on which to run (N = min\[-max\])                                                                                |
-| `--ntasks-per-node=`\\n       | Number of tasks to invoke on each node                                                                                           |
-| `-p, --partition=`\\partition | Partition requested                                                                                                              |
-| `--qos=`\\qos                 | Quality of Serice                                                                                                                |
-| `--requeue`                   | If set, permit the job to be requeued                                                                                            |
-| `--reservation=`\\name        | Allocate resources from named reservation                                                                                        |
-| `-s, --share`                 | Job allocation can share nodes with other running jobs                                                                           |
-| `-w, --nodelist=`\\hosts      | Request a specific list of hosts                                                                                                 |
-| `-t, --time=`\\hours:minutes  | Set a maximum job wallclock time                                                                                                 |
-| `-n, --ntasks=`\\n            | Number of tasks                                                                                                                  |
-| `--gres`                      | Specifies a comma delimited list of generic consumable resources                                                                 |
-| `--no-kill`                   | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
-| `--licenses`                  | Specification of licenses                                                                                                        |
-| `--mail-type`                 | Notify user by email when certain event types occur. Valid type values are BEGIN, END, FAIL, REQUEUE, and ALL (any state change) |
-| `--no-requeue`                | Specifies that the batch job should not be requeued after node failure                                                           |
-| `-x, --exclude`               | Explicitly exclude certain nodes from the resources granted to the job                                                           |
-| `--tmp`                       | Specify a minimum amount of temporary disk space                                                                                 |
-| `-M, --clusters=`\\names      | Clusters to issue commands to (multiple cluster names may be comma separated)                                                    |
+| Native specification              | Description                                                                                                                      |
+|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| -A, --account=*name*              | Charge job to specified accounts                                                                                                 |
+| --acctg-freq=*list*               | Define the job accounting sampling interval                                                                                      |
+| --comment=*string*                | An arbitrary comment                                                                                                             |
+| -C, --constraint=*list*           | Specify a list of constraints                                                                                                    |
+| --contiguous                      | If set, then the allocated nodes must form a contiguous set                                                                      |
+| --exclusive                       | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
+| --mem=*MB*                        | Minimum amount of real memory                                                                                                    |
+| --mem-per-cpu=*MB*                | Maximum amount of real memory per allocated cpu required by a job                                                                |
+| --mincpus=*n*                     | Minimum number of logical processors (threads) per node                                                                          |
+| -N, --nodes=*minnodes[-maxnodes]* | Number of nodes on which to run                                                                                                  |
+| --ntasks-per-node=*n*             | Number of tasks to invoke on each node                                                                                           |
+| -p, --partition=*partition*       | Partition requested                                                                                                              |
+| --qos=*qos*                       | Quality of Serice                                                                                                                |
+| --requeue                         | If set, permit the job to be requeued                                                                                            |
+| --reservation=*name*              | Allocate resources from named reservation                                                                                        |
+| -s, --share                       | Job allocation can share nodes with other running jobs                                                                           |
+| -w, --nodelist=*hosts*            | Request a specific list of hosts                                                                                                 |
+| -t, --time=*hours:minutes*        | Set a maximum job wallclock time                                                                                                 |
+| -n, --ntasks=*n*                  | Number of tasks                                                                                                                  |
+| --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
+| --no-kill                         | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
+| --licenses=*license*              | Specification of licenses                                                                                                        |
+| --mail-type=*type*                | Notify user by email when certain event types occur. Valid type values are BEGIN, END, FAIL, REQUEUE, and ALL (any state change) |
+| --no-requeue                      | Specifies that the batch job should not be requeued after node failure                                                           |
+| -x, --exclude=*nodelist*          | Explicitly exclude certain nodes from the resources granted to the job                                                           |
+| --tmp=*size[units]*               | Specify a minimum amount of temporary disk space                                                                                 |
+| -M, --clusters=*list*             | Comma delimited list of clusters to issue commands to                                                                            |
 
 Description of each parameter can be found in `man sbatch`.
 
