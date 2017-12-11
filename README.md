@@ -104,7 +104,7 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | --contiguous                      | If set, then the allocated nodes must form a contiguous set                                                                      |
 | --exclusive                       | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
 | --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
-| --no-kill                         | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
+| -k, --no-kill                     | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
 | -L, --licenses=*license*          | Specification of licenses                                                                                                        |
 | -M, --clusters=*list*             | Comma delimited list of clusters to issue commands to                                                                            |
 | --mail-type=*type*                | Notify user by email when certain event types occur. Valid type values are BEGIN, END, FAIL, REQUEUE, and ALL (any state change) |
