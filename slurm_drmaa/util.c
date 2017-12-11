@@ -499,6 +499,9 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 					case 'c' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CPUS_PER_TASK, arg);
 						break;
+					case 'd':
+						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_DEPENDENCY, arg);
+						break;
 					case 'k':
 						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_NO_KILL, NULL);
 						break;

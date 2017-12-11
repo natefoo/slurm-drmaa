@@ -102,6 +102,7 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | --comment=*string*                | An arbitrary comment                                                                                                             |
 | -C, --constraint=*list*           | Specify a list of constraints                                                                                                    |
 | --contiguous                      | If set, then the allocated nodes must form a contiguous set                                                                      |
+| -d, --dependency=*list*           | Defer the start of this job until the specified dependencies have been satisfied completed                                       |
 | --exclusive                       | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
 | --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
 | -k, --no-kill                     | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
