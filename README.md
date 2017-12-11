@@ -104,6 +104,7 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | -c, --cpus-per-task=*n*           | Number of processors per task                                                                                                    |
 | --contiguous                      | If set, then the allocated nodes must form a contiguous set                                                                      |
 | -d, --dependency=*list*           | Defer the start of this job until the specified dependencies have been satisfied completed                                       |
+| -e, --error=*pattern*             | Connect the batch script's standard error directly to the file name specified in the pattern                                     |
 | --exclusive                       | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
 | --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
 | -J, --job-name=*name*             | Specify a name for the job allocation                                                                                            |
@@ -118,6 +119,7 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | -n, --ntasks=*n*                  | Number of tasks                                                                                                                  |
 | --no-requeue                      | Specifies that the batch job should not be requeued after node failure                                                           |
 | --ntasks-per-node=*n*             | Number of tasks to invoke on each node                                                                                           |
+| -o, --output=*pattern*            | Connect the batch script's standard output directly to the file name specified in the pattern                                    |
 | -p, --partition=*partition*       | Partition requested                                                                                                              |
 | --qos=*qos*                       | Quality of Serice                                                                                                                |
 | --requeue                         | If set, permit the job to be requeued                                                                                            |

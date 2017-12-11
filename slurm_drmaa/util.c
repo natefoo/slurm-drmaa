@@ -375,6 +375,9 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 		else if (strcmp(name,"cpus-per-task") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CPUS_PER_TASK,value);
 		}
+		else if (strcmp(name, "error") == 0) {
+			slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_STDERR, value);
+		}
 		else if(strcmp(name,"exclusive") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUSIVE,NULL);
 		}
@@ -395,6 +398,9 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 		}
 		else if (strcmp(name,"ntasks-per-node") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NTASKS_PER_NODE,value);
+		}
+		else if (strcmp(name, "output") == 0) {
+			slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_STDOUT, value);
 		}
 		else if (strcmp(name,"partition") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_PARTITION,value);
