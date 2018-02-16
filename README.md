@@ -90,7 +90,7 @@ Native specification
 DRMAA interface allows to pass DRM dependent job submission options. Those options may be specified directly by setting `drmaa_native_specification` job template attribute or indirectly by the `drmaa_job_category` job template attribute. The legal format of the native options looks like:
 
 ```
-  -A My_job_name -s -N 1-10
+  -A My_job_name -s -N 1=10
 ```
 
 List of parameters that can be passed in the `drmaa_native_specification` attribute:
@@ -106,7 +106,7 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | --mem=*MB*                        | Minimum amount of real memory                                                                                                    |
 | --mem-per-cpu=*MB*                | Maximum amount of real memory per allocated cpu required by a job                                                                |
 | --mincpus=*n*                     | Minimum number of logical processors (threads) per node                                                                          |
-| -N, --nodes=*minnodes[-maxnodes]* | Number of nodes on which to run                                                                                                  |
+| -N, --nodes=*minnodes[=maxnodes]* | Number of nodes on which to run.                                                                                                  |
 | --ntasks-per-node=*n*             | Number of tasks to invoke on each node                                                                                           |
 | -p, --partition=*partition*       | Partition requested                                                                                                              |
 | --qos=*qos*                       | Quality of Serice                                                                                                                |
