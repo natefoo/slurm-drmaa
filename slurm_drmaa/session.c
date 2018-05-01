@@ -154,9 +154,6 @@ slurmdrmaa_session_run_bulk(
 					self->jobs->add( self->jobs, job );
 					job->release( job );
 					job = NULL;
-					if (working_cluster_rec)
-						slurmdb_destroy_cluster_rec(working_cluster_rec);
-					working_cluster_rec = NULL;
 				}
 			} else {
 				fsd_exc_raise_fmt( FSD_ERRNO_INTERNAL_ERROR,"slurm_load_job: %s",slurm_strerror(slurm_get_errno()));
@@ -173,9 +170,6 @@ slurmdrmaa_session_run_bulk(
 			self->jobs->add( self->jobs, job );
 			job->release( job );
 			job = NULL;
-			if (working_cluster_rec)
-				slurmdb_destroy_cluster_rec(working_cluster_rec);
-			working_cluster_rec = NULL;
 		}
 	 }
 	ELSE
@@ -195,6 +189,10 @@ slurmdrmaa_session_run_bulk(
 
 		if( job )
 			job->release( job );
+
+		if (working_cluster_rec)
+			slurmdb_destroy_cluster_rec(working_cluster_rec);
+		working_cluster_rec = NULL;
 
 		if( fsd_exc_get() != NULL )
 			fsd_free_vector( job_ids );
