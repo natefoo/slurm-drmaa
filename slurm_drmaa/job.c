@@ -188,6 +188,15 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 				case JOB_TIMEOUT:
 				case JOB_NODE_FAIL:
 				case JOB_PREEMPTED:
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(14,3,0)
+				case JOB_BOOT_FAIL:
+#endif
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(16,5,0)
+				case JOB_DEADLINE:
+#endif
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(17,2,0)
+				case JOB_OOM:
+#endif
 					fsd_log_debug(("interpreting as DRMAA_PS_FAILED"));
 					self->state = DRMAA_PS_FAILED;
 					self->exit_status = job_info->job_array[0].exit_code;
