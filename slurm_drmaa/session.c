@@ -101,27 +101,27 @@ slurmdrmaa_session_run_bulk(
 	submit_response_msg_t *submit_response = NULL;
 	job_info_msg_t *job_info = NULL;
 
-    /* zero out the struct, and set default vaules */
+	/* zero out the struct, and set default vaules */
 	slurm_init_job_desc_msg( &job_desc );
 	
 	TRY
 	 {
-        unsigned i;
-		if( start != end ) {
+		unsigned i;
+		if ( start != end ) {
 			n_jobs = (end - start) / incr + 1;
-         } else {
-            n_jobs = 1;
-         }
+		} else {
+			n_jobs = 1;
+		}
 
-        fsd_calloc( job_ids, n_jobs+1, char* );
+		fsd_calloc( job_ids, n_jobs+1, char* );
 
 		if ( start != 0 || end != 0 || incr != 0 ) {
-        	job_desc.array_inx = fsd_asprintf( "%d-%d:%d", start, end, incr );
+			job_desc.array_inx = fsd_asprintf( "%d-%d:%d", start, end, incr );
 		}
 
 		connection_lock = fsd_mutex_lock( &self->drm_connection_mutex );
 		slurmdrmaa_job_create_req( self, jt, (fsd_environ_t**)&env , &job_desc );
-		if(slurm_submit_batch_job(&job_desc,&submit_response)){
+		if (slurm_submit_batch_job(&job_desc,&submit_response)) {
 			fsd_exc_raise_fmt(
 				FSD_ERRNO_INTERNAL_ERROR,"slurm_submit_batch_job: %s",slurm_strerror(slurm_get_errno()));
 		}
@@ -134,13 +134,11 @@ slurmdrmaa_session_run_bulk(
 			fsd_log_debug(("job %u submitted on cluster %s", submit_response->job_id, working_cluster_rec->name));
 
 		if ( start != 0 || end != 0 || incr != 0 ) {
-			if ( SLURM_SUCCESS == slurm_load_job( &job_info, submit_response->job_id, 0) )
-			{
+			if ( SLURM_SUCCESS == slurm_load_job( &job_info, submit_response->job_id, 0) ) {
 				fsd_assert(  job_info->record_count == n_jobs );
-				for(i=0; i < job_info->record_count; i++)
-				{
+				for (i=0; i < job_info->record_count; i++) {
 					if (!working_cluster_rec)
-						job_ids[i] = fsd_asprintf( "%d", job_info->job_array[i].job_id);
+						job_ids[i] = fsd_asprintf("%d", job_info->job_array[i].job_id);
 					else
 						job_ids[i] = fsd_asprintf("%d.%s",submit_response->job_id,working_cluster_rec->name);
 
@@ -154,7 +152,7 @@ slurmdrmaa_session_run_bulk(
 						slurmdb_destroy_cluster_rec(working_cluster_rec);
 					working_cluster_rec = NULL;
 				}
-			} else  {
+			} else {
 				fsd_exc_raise_fmt( FSD_ERRNO_INTERNAL_ERROR,"slurm_load_job: %s",slurm_strerror(slurm_get_errno()));
 			}
 		} else {
@@ -174,13 +172,13 @@ slurmdrmaa_session_run_bulk(
 			working_cluster_rec = NULL;
 		}
 	 }
-	 ELSE
-	{
+	ELSE
+	 {
 		if ( !connection_lock )
 			connection_lock = fsd_mutex_lock( &self->drm_connection_mutex );
 
 		slurm_free_submit_response_response_msg ( submit_response );
-	}
+	 }
 	FINALLY
 	 {
 		
