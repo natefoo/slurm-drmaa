@@ -100,6 +100,9 @@ slurmdrmaa_session_run_bulk(
 	job_desc_msg_t job_desc;
 	submit_response_msg_t *submit_response = NULL;
 	job_info_msg_t *job_info = NULL;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(14, 10, 0)
+	int v = 0;
+#endif
 
 	/* zero out the struct, and set default vaules */
 	slurm_init_job_desc_msg( &job_desc );
@@ -135,13 +138,16 @@ slurmdrmaa_session_run_bulk(
 
 		if ( start != 0 || end != 0 || incr != 0 ) {
 			if ( SLURM_SUCCESS == slurm_load_job( &job_info, submit_response->job_id, 0) ) {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(14, 10, 0)
+				for (i = 0, v = start; i < n_jobs; i++, v += incr) {
+					job_ids[i] = fsd_asprintf("%d_%d", submit_response->job_id, v);
+#else
 				fsd_assert(  job_info->record_count == n_jobs );
 				for (i=0; i < job_info->record_count; i++) {
-					if (!working_cluster_rec)
-						job_ids[i] = fsd_asprintf("%d", job_info->job_array[i].job_id);
-					else
-						job_ids[i] = fsd_asprintf("%d.%s",submit_response->job_id,working_cluster_rec->name);
-
+					job_ids[i] = fsd_asprintf("%d", job_info->job_array[i].job_id);
+#endif
+					if (working_cluster_rec)
+						job_ids[i] = fsd_asprintf("%s.%s", job_ids[i], working_cluster_rec->name);
 					job = slurmdrmaa_job_new( fsd_strdup(job_ids[i]) );
 					job->session = self;
 					job->submit_time = time(NULL);
@@ -176,8 +182,6 @@ slurmdrmaa_session_run_bulk(
 	 {
 		if ( !connection_lock )
 			connection_lock = fsd_mutex_lock( &self->drm_connection_mutex );
-
-		slurm_free_submit_response_response_msg ( submit_response );
 	 }
 	FINALLY
 	 {
@@ -185,6 +189,9 @@ slurmdrmaa_session_run_bulk(
 			
 		if( connection_lock )
 			fsd_mutex_unlock( &self->drm_connection_mutex );
+
+		if( submit_response )
+			slurm_free_submit_response_response_msg ( submit_response );
 
 		if( job )
 			job->release( job );
