@@ -125,8 +125,15 @@ slurmdrmaa_session_run_bulk(
 		connection_lock = fsd_mutex_lock( &self->drm_connection_mutex );
 		slurmdrmaa_job_create_req( self, jt, (fsd_environ_t**)&env , &job_desc );
 		if (slurm_submit_batch_job(&job_desc,&submit_response)) {
-			fsd_exc_raise_fmt(
-				FSD_ERRNO_INTERNAL_ERROR,"slurm_submit_batch_job: %s",slurm_strerror(slurm_get_errno()));
+			int _slurm_errno = slurm_get_errno();
+			if (_slurm_errno == EAGAIN ||
+			    (_slurm_errno >= 5000 && _slurm_errno < 6000)) {
+				fsd_exc_raise_fmt(FSD_ERRNO_DRM_COMMUNICATION_FAILURE,"slurm_submit_batch_job error: %s", slurm_strerror(_slurm_errno));
+			} else if (_slurm_errno >= 2000 && _slurm_errno < 4000) {
+				fsd_exc_raise_fmt(FSD_ERRNO_DENIED_BY_DRM,"slurm_submit_batch_job error: %s", slurm_strerror(slurm_get_errno()));
+			} else {
+				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR,"slurm_submit_batch_job error (%d): %s", _slurm_errno, slurm_strerror(_slurm_errno));
+			}
 		}
 
 		connection_lock = fsd_mutex_unlock( &self->drm_connection_mutex );
