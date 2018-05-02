@@ -104,10 +104,8 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | -c, --cpus-per-task=*n*           | Number of processors per task                                                                                                    |
 | --contiguous                      | If set, then the allocated nodes must form a contiguous set                                                                      |
 | -d, --dependency=*list*           | Defer the start of this job until the specified dependencies have been satisfied completed                                       |
-| -e, --error=*pattern*             | Connect the batch script's standard error directly to the file name specified in the pattern                                     |
 | --exclusive                       | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
 | --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
-| -J, --job-name=*name*             | Specify a name for the job allocation                                                                                            |
 | -k, --no-kill                     | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
 | -L, --licenses=*license*          | Specification of licenses                                                                                                        |
 | -M, --clusters=*list*             | Comma delimited list of clusters to issue commands to                                                                            |
@@ -119,16 +117,24 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | -n, --ntasks=*n*                  | Number of tasks                                                                                                                  |
 | --no-requeue                      | Specifies that the batch job should not be requeued after node failure                                                           |
 | --ntasks-per-node=*n*             | Number of tasks to invoke on each node                                                                                           |
-| -o, --output=*pattern*            | Connect the batch script's standard output directly to the file name specified in the pattern                                    |
 | -p, --partition=*partition*       | Partition requested                                                                                                              |
 | --qos=*qos*                       | Quality of Serice                                                                                                                |
 | --requeue                         | If set, permit the job to be requeued                                                                                            |
 | --reservation=*name*              | Allocate resources from named reservation                                                                                        |
 | -s, --share                       | Job allocation can share nodes with other running jobs                                                                           |
-| -t, --time=*hours:minutes*        | Set a maximum job wallclock time                                                                                                 |
 | --tmp=*size[units]*               | Specify a minimum amount of temporary disk space                                                                                 |
 | -w, --nodelist=*hosts*            | Request a specific list of hosts                                                                                                 |
 | -x, --exclude=*nodelist*          | Explicitly exclude certain nodes from the resources granted to the job                                                           |
+
+Additionally, the following parameters to `drmaa_native_specification` are supported, but their use is discouraged in
+favor of the corresponding DRMAA job attributes:
+
+| Native specification       | DRMAA job attribute | Description                                                                                   |
+|----------------------------|---------------------|-----------------------------------------------------------------------------------------------|
+| -e, --error=*pattern*      | drmaa_output_path   | Connect the batch script's standard error directly to the file name specified in the pattern  |
+| -J, --job-name=*name*      | drmaa_job_name      | Specify a name for the job allocation                                                         |
+| -o, --output=*pattern*     | drmaa_error_path    | Connect the batch script's standard output directly to the file name specified in the pattern |
+| -t, --time=*hours:minutes* | drmaa_wct_hlimit    | Set a maximum job wallclock time                                                              |
 
 Description of each parameter can be found in `man sbatch`.
 
