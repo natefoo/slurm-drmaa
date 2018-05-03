@@ -101,29 +101,40 @@ List of parameters that can be passed in the `drmaa_native_specification` attrib
 | --acctg-freq=*list*               | Define the job accounting sampling interval                                                                                      |
 | --comment=*string*                | An arbitrary comment                                                                                                             |
 | -C, --constraint=*list*           | Specify a list of constraints                                                                                                    |
+| -c, --cpus-per-task=*n*           | Number of processors per task                                                                                                    |
 | --contiguous                      | If set, then the allocated nodes must form a contiguous set                                                                      |
+| -d, --dependency=*list*           | Defer the start of this job until the specified dependencies have been satisfied completed                                       |
 | --exclusive                       | Allocate nodenumber of tasks to invoke on each nodes in exclusive mode when cpu consumable resource is enabled                   |
+| --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
+| -k, --no-kill                     | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
+| -L, --licenses=*license*          | Specification of licenses                                                                                                        |
+| -M, --clusters=*list*             | Comma delimited list of clusters to issue commands to                                                                            |
+| --mail-type=*type*                | Notify user by email when certain event types occur. Valid type values are BEGIN, END, FAIL, REQUEUE, and ALL (any state change) |
 | --mem=*MB*                        | Minimum amount of real memory                                                                                                    |
 | --mem-per-cpu=*MB*                | Maximum amount of real memory per allocated cpu required by a job                                                                |
 | --mincpus=*n*                     | Minimum number of logical processors (threads) per node                                                                          |
 | -N, --nodes=*minnodes[-maxnodes]* | Number of nodes on which to run                                                                                                  |
+| -n, --ntasks=*n*                  | Number of tasks                                                                                                                  |
+| --no-requeue                      | Specifies that the batch job should not be requeued after node failure                                                           |
 | --ntasks-per-node=*n*             | Number of tasks to invoke on each node                                                                                           |
 | -p, --partition=*partition*       | Partition requested                                                                                                              |
 | --qos=*qos*                       | Quality of Serice                                                                                                                |
 | --requeue                         | If set, permit the job to be requeued                                                                                            |
 | --reservation=*name*              | Allocate resources from named reservation                                                                                        |
 | -s, --share                       | Job allocation can share nodes with other running jobs                                                                           |
-| -w, --nodelist=*hosts*            | Request a specific list of hosts                                                                                                 |
-| -t, --time=*hours:minutes*        | Set a maximum job wallclock time                                                                                                 |
-| -n, --ntasks=*n*                  | Number of tasks                                                                                                                  |
-| --gres=*list*                     | Specifies a comma delimited list of generic consumable resources                                                                 |
-| --no-kill                         | Do not automatically terminate a job of one of the nodes it has been allocated fails                                             |
-| --licenses=*license*              | Specification of licenses                                                                                                        |
-| --mail-type=*type*                | Notify user by email when certain event types occur. Valid type values are BEGIN, END, FAIL, REQUEUE, and ALL (any state change) |
-| --no-requeue                      | Specifies that the batch job should not be requeued after node failure                                                           |
-| -x, --exclude=*nodelist*          | Explicitly exclude certain nodes from the resources granted to the job                                                           |
 | --tmp=*size[units]*               | Specify a minimum amount of temporary disk space                                                                                 |
-| -M, --clusters=*list*             | Comma delimited list of clusters to issue commands to                                                                            |
+| -w, --nodelist=*hosts*            | Request a specific list of hosts                                                                                                 |
+| -x, --exclude=*nodelist*          | Explicitly exclude certain nodes from the resources granted to the job                                                           |
+
+Additionally, the following parameters to `drmaa_native_specification` are supported, but their use is discouraged in
+favor of the corresponding DRMAA job attributes:
+
+| Native specification       | DRMAA job attribute | Description                                                                                   |
+|----------------------------|---------------------|-----------------------------------------------------------------------------------------------|
+| -e, --error=*pattern*      | drmaa_output_path   | Connect the batch script's standard error directly to the file name specified in the pattern  |
+| -J, --job-name=*name*      | drmaa_job_name      | Specify a name for the job allocation                                                         |
+| -o, --output=*pattern*     | drmaa_error_path    | Connect the batch script's standard output directly to the file name specified in the pattern |
+| -t, --time=*hours:minutes* | drmaa_wct_hlimit    | Set a maximum job wallclock time                                                              |
 
 Description of each parameter can be found in `man sbatch`.
 
