@@ -163,7 +163,7 @@ slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc)
 	fsd_free(job_desc->std_err);	
 	fsd_free(job_desc->work_dir);
 	fsd_free(job_desc->exc_nodes);
-#if SLURM_VERSION_NUMBER ># SLURM_VERSION_NUM(18,8,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(18,8,0)
 	fsd_free(job_desc->tres_per_node);
 #else
 	fsd_free(job_desc->gres);
@@ -297,7 +297,7 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;	
 		case SLURM_NATIVE_GRES:
 			fsd_log_debug(("# gres = %s",value));
-#if SLURM_VERSION_NUMBER ># SLURM_VERSION_NUM(18,8,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(18,8,0)
 			job_desc->tres_per_node = fsd_strdup(value);
 #else
 			job_desc->gres = fsd_strdup(value);
