@@ -19,6 +19,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/time.h>
+#include <sys/resource.h>
+
 #include <drmaa_utils/iter.h>
 #include <drmaa_utils/conf.h>
 #include <slurm_drmaa/job.h>
@@ -106,7 +109,28 @@ slurmdrmaa_session_run_bulk(
 
 	/* zero out the struct, and set default vaules */
 	slurm_init_job_desc_msg( &job_desc );
+
 	
+	/* Set SLURM_PRIO_PROCESS. This is set by sbatch and needs to
+	   be done here as well. It probably shouldn't be fatal if it
+	   fails. */
+	int prio;
+	char prio_buf[4];  // -20 to 20
+	errno = 0; /* recommended before calling getpriority(), in case it returns -1 */
+	/* probably should put this in a TRY */
+	if ((prio = getpriority(PRIO_PROCESS, 0)) == -1)  {
+	  if (errno) {
+	    fsd_log_debug(("getpriority(PRIO_PROCESS) errno %d", errno));
+	    prio = 0;
+	  }
+	}
+	snprintf(prio_buf, 4, "%d", prio);
+	prio_buf[3] = '\0';
+	if (setenv ("SLURM_PRIO_PROCESS", prio_buf, 0) < 0) {
+	  fsd_log_debug(("unable to set SLURM_PRIO_PROCESS to %d in environment", prio));
+	}
+
+
 	TRY
 	 {
 		unsigned i;
