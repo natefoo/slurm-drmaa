@@ -43,11 +43,24 @@ fi
 [ ! -e "/slurm-drmaa/autogen.sh" ] && git clone --recursive https://github.com/natefoo/slurm-drmaa.git /slurm-drmaa
 
 cd /slurm-drmaa
+
 # replace rev fetching command with its output
 sed -i -E -e 's/^(AC_INIT\(.*)m4_esyscmd_s\([^)]+\)(.*)$/\1['$(eval $(grep '^AC_INIT(' configure.ac | sed -E 's/^AC_INIT\(.*m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' \
           -e 's/^(AC_REVISION\()\[m4_esyscmd_s\([^)]+\)\](.*)$/\1['$(eval $(grep '^AC_REVISION(' configure.ac | sed -E 's/^AC_REVISION\(\[m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' configure.ac
+
 ./autoclean.sh || true
 ./autogen.sh
+./configure
+
+# fix up RPM specfile
+eval `grep ^PACKAGE_VERSION= configure`
+PACKAGE_RELEASE=`echo ${PACKAGE_VERSION#*-} | sed -e 's/[.-]/_/g'`
+sed -i -e "s/^\(Version:\s*\).*$/\1${PACKAGE_VERSION%%-*}/" slurm-drmaa.spec
+if [ "${PACKAGE_VERSION}" != "${PACKAGE_RELEASE}" ]; then
+    # no dash in $PACKAGE_VERSION so this is not a dev/pre release
+    sed -i -e "s/^\(Release:\s*\).*/\11.${PACKAGE_RELEASE}%{?dist}/" slurm-drmaa.spec
+fi
+
 make dist
 DISTCHECK_CONFIGURE_FLAGS="CFLAGS='-I../../../../drmaa_utils -I../../..'" make distcheck
 EOF

@@ -6,6 +6,7 @@ config.status
 stamp-h1
 config.h
 config.h.in
+config.h.in~
 std.out
 autom4te.cache
 drmaa_utils
