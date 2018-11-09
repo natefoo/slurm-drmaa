@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # build the distribution tarball (in docker)
 
 dimg="${1:-natefoo/slurm-drmaa-dist}"
@@ -15,10 +16,9 @@ VOLUME ["/slurm-drmaa"]
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get -qqy update
-
 # slurm headers/libs are required to generate the build artifacts
-RUN apt-get -y install --no-install-recommends build-essential gperf ragel m4 automake autoconf libtool libslurm-dev libslurmdb-dev slurm-wlm git ca-certificates bison
+RUN apt-get -qqy update && apt-get -y install --no-install-recommends build-essential gperf ragel m4 automake autoconf \
+    libtool libslurm-dev libslurmdb-dev slurm-wlm git ca-certificates bison
 RUN apt-get -y clean
 
 ADD docker-make-release.sh /
@@ -43,6 +43,9 @@ fi
 [ ! -e "/slurm-drmaa/autogen.sh" ] && git clone --recursive https://github.com/natefoo/slurm-drmaa.git /slurm-drmaa
 
 cd /slurm-drmaa
+# replace rev fetching command with its output
+sed -i -E -e 's/^(AC_INIT\(.*)m4_esyscmd_s\([^)]+\)(.*)$/\1['$(eval $(grep '^AC_INIT(' configure.ac | sed -E 's/^AC_INIT\(.*m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' \
+          -e 's/^(AC_REVISION\()\[m4_esyscmd_s\([^)]+\)\](.*)$/\1['$(eval $(grep '^AC_REVISION(' configure.ac | sed -E 's/^AC_REVISION\(\[m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' configure.ac
 ./autoclean.sh || true
 ./autogen.sh
 make dist

@@ -1,4 +1,4 @@
-AC_INIT([PSNC DRMAA for SLURM], m4_esyscmd([echo -n 1.2.0-dev. ; git rev-parse --short HEAD | tr -d '\n']), [mamonski@man.poznan.pl], [slurm-drmaa])
+AC_INIT([PSNC DRMAA for SLURM], m4_esyscmd_s([echo -n 1.2.0-dev. ; git rev-parse --short HEAD]), [mamonski@man.poznan.pl], [slurm-drmaa])
 AC_PREREQ(2.59)
 AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
