@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/param.h>               /* MAXPATHLEN */
 
 #include <drmaa_utils/common.h>
 #include <drmaa_utils/conf.h>
@@ -37,9 +38,13 @@
 #include <slurm/slurmdb.h>
 #include <stdint.h>
 
+#define	INJECT_ENVVAR_COUNT 2
+
 
 static int
 slurmdrmaa_id_in_array_expr( const char *array_expr, uint32_t id );
+static unsigned int _slurmdrmaa_make_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size);
+static unsigned int _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos);
 
 
 static void
@@ -620,20 +625,36 @@ slurmdrmaa_job_create(
 		fsd_log_debug(( "\n  drmaa_start_time: %s -> %ld", value, (long)job_desc->begin_time));
 	}
 
+	/* TODO: create job_dest->environment here and prepopulate SLURM_PRIO_PROCESS and whatever else sbatch does by
+	 * default. then use fsd_realloc below. */
+
+	/* TODO: support --export */
+
 	/*  propagate all environment variables from submission host */
 	{
 		extern char **environ;
 		char **i;
 		unsigned j = 0;
 
-		for ( i = environ; *i; i++) {
+		for (i = environ; *i; i++) {
 			job_desc->env_size++;
 		}
 		
+		job_desc->env_size += INJECT_ENVVAR_COUNT;
+
 		fsd_log_debug(("environ env_size = %d",job_desc->env_size));
 		fsd_calloc(job_desc->environment, job_desc->env_size+1, char *);
 		
-		for ( i = environ; *i; i++,j++ ) {
+		j = _slurmdrmaa_set_submit_dir_env(job_desc->environment, j);
+
+		if (j < INJECT_ENVVAR_COUNT) {
+			for (i = INJECT_ENVVAR_COUNT; i != j; i--)
+				// FIXME: no you can't just free stuff off the end can you?
+				fsd_free(job_desc->environment[]);
+			job_desc->env_size -= INJECT_ENVVAR_COUNT - j;
+		}
+
+		for (i = environ; *i; i++, j++) {
 			job_desc->environment[j] = fsd_strdup(*i);
 		}
 	}
@@ -864,12 +885,12 @@ slurmdrmaa_job_create(
 	 	}
  	}
 
-    /* set defaults for constraints - ref: slurm.h */
-    fsd_log_debug(("# Setting defaults for tasks and processors" ));
-    job_desc->num_tasks = 1;
-    job_desc->min_cpus = 0;
-    job_desc->cpus_per_task = 0;
-    job_desc->pn_min_cpus = 0;
+	/* set defaults for constraints - ref: slurm.h */
+	fsd_log_debug(("# Setting defaults for tasks and processors" ));
+	job_desc->num_tasks = 1;
+	job_desc->min_cpus = 0;
+	job_desc->cpus_per_task = 0;
+	job_desc->pn_min_cpus = 0;
 
 	/* native specification */
 	value = jt->get_attr( jt, DRMAA_NATIVE_SPECIFICATION );
@@ -882,3 +903,41 @@ slurmdrmaa_job_create(
 }
 
 
+/* TODO: move to util? */
+static
+unsigned int _slurmdrmaa_make_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size)
+{
+	char *envvar;
+	unsigned int len = value_size + strlen(key) + 2;  /* 2 includes the '=' */
+
+	fsd_calloc(envvar, len, char *);
+	fsd_snprintf(NULL, envvar, len, "%s=%s", key, value);
+	envp[envpos] = envvar;
+	fsd_log_debug(("# added to job environ: %s\n", envvar));
+
+	return ++envpos;
+}
+
+
+/* Adapted from sbatch.c */
+
+/* Set SLURM_SUBMIT_DIR and SLURM_SUBMIT_HOST environment variables within
+ * current state */
+static
+unsigned int _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos)
+{
+	char buf[MAXPATHLEN + 1], host[256];
+
+	/* TODO: in caller, decrease env_size and free its extra slots on error (when envpos < expected size) */
+	if ((getcwd(buf, MAXPATHLEN)) == NULL)
+		fsd_log_error(("unable to set SLURM_SUBMIT_DIR in job environment: getcwd failed: %m"));
+	else
+		envpos = _slurmdrmaa_make_envvar(envp, envpos, "SLURM_SUBMIT_DIR", buf, MAXPATHLEN);
+
+	if ((gethostname(host, sizeof(host))))
+		fsd_log_error(("unable to set SLURM_SUBMIT_HOST in environment: gethostname_short failed: %m"));
+	else
+		envpos = _slurmdrmaa_make_envvar(envp, envpos, "SLURM_SUBMIT_HOST", host, 256);
+
+	return envpos;
+}
