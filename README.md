@@ -228,3 +228,5 @@ This program is free software: you can redistribute it and/or modify it under th
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program. If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
+
+Some portions of this program are copied or derived from Slurm, which is licensed under the GNU General Public License Version 2. For details, including the list of Slurm copyright holders,  see <[https://slurm.schedmd.com/](https://slurm.schedmd.com/)>.

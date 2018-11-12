@@ -19,7 +19,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/param.h>               /* MAXPATHLEN */
+#include <sys/resource.h>		/* PRIO_PROCESS */
+#include <sys/param.h>			/* MAXPATHLEN */
+#include <sys/stat.h>			/* umask() */
 
 #include <drmaa_utils/common.h>
 #include <drmaa_utils/conf.h>
@@ -38,13 +40,15 @@
 #include <slurm/slurmdb.h>
 #include <stdint.h>
 
-#define	INJECT_ENVVAR_COUNT 2
+#define	INJECT_ENVVAR_COUNT 4
 
 
 static int
 slurmdrmaa_id_in_array_expr( const char *array_expr, uint32_t id );
-static unsigned int _slurmdrmaa_make_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size);
+static unsigned int _slurmdrmaa_add_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size);
+static unsigned int _slurmdrmaa_set_prio_process_env(char **envp, unsigned int envpos);
 static unsigned int _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos);
+static unsigned int _slurmdrmaa_set_umask_env(char **envp, unsigned int envpos);
 
 
 static void
@@ -625,11 +629,6 @@ slurmdrmaa_job_create(
 		fsd_log_debug(( "\n  drmaa_start_time: %s -> %ld", value, (long)job_desc->begin_time));
 	}
 
-	/* TODO: create job_dest->environment here and prepopulate SLURM_PRIO_PROCESS and whatever else sbatch does by
-	 * default. then use fsd_realloc below. */
-
-	/* TODO: support --export */
-
 	/*  propagate all environment variables from submission host */
 	{
 		extern char **environ;
@@ -645,13 +644,15 @@ slurmdrmaa_job_create(
 		fsd_log_debug(("environ env_size = %d",job_desc->env_size));
 		fsd_calloc(job_desc->environment, job_desc->env_size+1, char *);
 		
+		j = _slurmdrmaa_set_prio_process_env(job_desc->environment, j);
 		j = _slurmdrmaa_set_submit_dir_env(job_desc->environment, j);
+		j = _slurmdrmaa_set_umask_env(job_desc->environment, j);
 
 		if (j < INJECT_ENVVAR_COUNT) {
-			for (i = INJECT_ENVVAR_COUNT; i != j; i--)
-				// FIXME: no you can't just free stuff off the end can you?
-				fsd_free(job_desc->environment[]);
-			job_desc->env_size -= INJECT_ENVVAR_COUNT - j;
+			fsd_log_warning(("fewer env vars (%d) were injected in to job template environment than expected (%d)",j,INJECT_ENVVAR_COUNT));
+			job_desc->env_size -= (INJECT_ENVVAR_COUNT - j);
+			fsd_realloc(job_desc->environment, job_desc->env_size+1, char*);
+			fsd_log_debug(("new environ env_size = %d",job_desc->env_size));
 		}
 
 		for (i = environ; *i; i++, j++) {
@@ -902,14 +903,16 @@ slurmdrmaa_job_create(
 	
 }
 
-
-/* TODO: move to util? */
-static
-unsigned int _slurmdrmaa_make_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size)
+/* Create environment variables and add them to the job description's environment */
+/* TODO: bounds check all these */
+static unsigned int
+_slurmdrmaa_add_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size)
 {
 	char *envvar;
 	unsigned int len = value_size + strlen(key) + 2;  /* 2 includes the '=' */
 
+	/* FIXME: len here is going to be too long since value_size is the max right? do we care? do the strings all
+	 * need to be allocated perfectly? probably not right? */
 	fsd_calloc(envvar, len, char *);
 	fsd_snprintf(NULL, envvar, len, "%s=%s", key, value);
 	envp[envpos] = envvar;
@@ -918,13 +921,40 @@ unsigned int _slurmdrmaa_make_envvar(char **envp, unsigned int envpos, char *key
 	return ++envpos;
 }
 
+/* Functions below adapted from Slurm sbatch.c */
 
-/* Adapted from sbatch.c */
+/*
+ * _set_prio_process_env
+ *
+ * Set the internal SLURM_PRIO_PROCESS environment variable to support
+ * the propagation of the users nice value and the "PropagatePrioProcess"
+ * config keyword.
+ */
+static unsigned int
+_slurmdrmaa_set_prio_process_env(char **envp, unsigned int envpos)
+{
+	int retval;
+	char prio_char[4];
+
+	errno = 0; /* needed to detect a real failure since prio can be -1 */
+
+	if ((retval = getpriority(PRIO_PROCESS, 0)) == -1)  {
+		if (errno) {
+			fsd_log_error(("unable to set SLURM_PRIO_PROCESS in job environment: getpriority(PRIO_PROCESS): %m"));
+			return envpos;
+		}
+	}
+
+	fsd_snprintf(NULL, prio_char, 4, "%d", retval);
+	envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_PRIO_PROCESS", prio_char, 3);
+
+	return envpos;
+}
 
 /* Set SLURM_SUBMIT_DIR and SLURM_SUBMIT_HOST environment variables within
  * current state */
-static
-unsigned int _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos)
+static unsigned int
+_slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos)
 {
 	char buf[MAXPATHLEN + 1], host[256];
 
@@ -932,12 +962,36 @@ unsigned int _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos)
 	if ((getcwd(buf, MAXPATHLEN)) == NULL)
 		fsd_log_error(("unable to set SLURM_SUBMIT_DIR in job environment: getcwd failed: %m"));
 	else
-		envpos = _slurmdrmaa_make_envvar(envp, envpos, "SLURM_SUBMIT_DIR", buf, MAXPATHLEN);
+		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_DIR", buf, MAXPATHLEN);
 
 	if ((gethostname(host, sizeof(host))))
 		fsd_log_error(("unable to set SLURM_SUBMIT_HOST in environment: gethostname_short failed: %m"));
 	else
-		envpos = _slurmdrmaa_make_envvar(envp, envpos, "SLURM_SUBMIT_HOST", host, 256);
+		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_HOST", host, 256);
+
+	return envpos;
+}
+
+/* Set SLURM_UMASK environment variable with current state */
+static unsigned int
+_slurmdrmaa_set_umask_env(char **envp, unsigned int envpos)
+{
+	char mask_char[5];
+	mode_t mask;
+
+	if (getenv("SLURM_UMASK")) {	/* use this value already in env */
+		fsd_log_debug(("skipped setting $SLURM_UMASK; it is already set in the environment: SLURM_UMASK=%s",getenv("SLURM_UMASK")));
+		return envpos;
+	}
+
+	/* sbatch supports `#PBS -W umask=XXXX` in the script, slurm-drmaa does not support #PBS options */
+	mask = (int)umask(0);
+	umask(mask);
+
+	fsd_snprintf(NULL, mask_char, 5, "0%d%d%d",
+		((mask>>6)&07), ((mask>>3)&07), mask&07);
+
+	envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_UMASK", mask_char, 4);
 
 	return envpos;
 }
