@@ -45,7 +45,7 @@ fi
 cd /slurm-drmaa
 
 # replace rev fetching command with its output
-sed -i -E -e 's/^(AC_INIT\(.*)m4_esyscmd_s\([^)]+\)(.*)$/\1['$(eval $(grep '^AC_INIT(' configure.ac | sed -E 's/^AC_INIT\(.*m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' \
+sed -i -E -e 's/^(AC_INIT\(.*)m4_esyscmd_s\([^)]+\)(.*)$/\1'$(eval $(grep '^AC_INIT(' configure.ac | sed -E 's/^AC_INIT\(.*m4_esyscmd_s\(([^)]+).*$/\1/'))'\2/' \
           -e 's/^(AC_REVISION\()\[m4_esyscmd_s\([^)]+\)\](.*)$/\1['$(eval $(grep '^AC_REVISION(' configure.ac | sed -E 's/^AC_REVISION\(\[m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' configure.ac
 
 ./autoclean.sh || true
