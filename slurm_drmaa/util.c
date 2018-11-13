@@ -98,6 +98,7 @@ static int slurmdrmaa_mail_type_parse(const char *mail_type_str)
 	return rc;
 }
 
+#define SLURM_NATIVE_OPTION_NO_VALUE "__NO_VALUE_REQUIRED__"
 
 enum slurm_native {
 	SLURM_NATIVE_ACCOUNT,
@@ -180,6 +181,11 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 	char * ptr = NULL;
 	char * rest = NULL;
 	char * token = NULL;
+
+	if (value == NULL) {
+		fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
+			"Invalid native specification: long option missing '='?");
+	}
 
 	switch(attr)
 	{
@@ -359,12 +365,6 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 	  {
 		name = fsd_strdup(strtok_r(add_attr_copy, "=", &ctxt));
 		value = strtok_r(NULL, "=", &ctxt);
-		/*
-		 * TODO: move it to slurmdrmaa_add_attribute
-		 if (value == NULL) {
-			fsd_exc_raise_fmt(FSD_DRMAA_ERRNO_INVALID_ATTRIBUTE_VALUE,
-				"Invalid native specification: %s Missing '='.", add_attr_copy);
-		} */
 
 		if(strcmp(name,"account") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_ACCOUNT,value);
@@ -379,7 +379,7 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CONSTRAINT,value);
 		}
 		else if (strcmp(name,"contiguous") == 0) {
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CONTIGUOUS,NULL);
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CONTIGUOUS,SLURM_NATIVE_OPTION_NO_VALUE);
 		}
 		else if (strcmp(name,"cpus-per-task") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_CPUS_PER_TASK,value);
@@ -388,7 +388,7 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 			slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_STDERR, value);
 		}
 		else if(strcmp(name,"exclusive") == 0) {
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUSIVE,NULL);
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUSIVE,SLURM_NATIVE_OPTION_NO_VALUE);
 		}
 		else if (strcmp(name,"mem") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_MEM,value);
@@ -418,13 +418,13 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_QOS,value);
 		}
 		else if (strcmp(name,"requeue") == 0) {
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_REQUEUE,NULL);
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_REQUEUE,SLURM_NATIVE_OPTION_NO_VALUE);
 		}
 		else if (strcmp(name,"reservation") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_RESERVATION,value);
 		}
 		else if (strcmp(name,"share") == 0) {
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE,NULL);
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE,SLURM_NATIVE_OPTION_NO_VALUE);
 		}		
 		else if(strcmp(name,"job_name") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_JOB_NAME,value);
@@ -448,7 +448,7 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 		}
 #endif
 		else if(strcmp(name,"no-kill") == 0) {
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_KILL,NULL);
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_KILL,SLURM_NATIVE_OPTION_NO_VALUE);
 		}
 		else if(strcmp(name,"licenses") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_LICENSES,value);
@@ -457,7 +457,7 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_MAIL_TYPE,value);
 		}
 		else if(strcmp(name,"no-requeue") == 0) {
-			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_REQUEUE,NULL);
+			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NO_REQUEUE,SLURM_NATIVE_OPTION_NO_VALUE);
 		}
 		else if(strcmp(name,"exclude") == 0) {
 			slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_EXCLUDE,value);
@@ -531,7 +531,7 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_STDERR, arg);
 						break;
 					case 'k':
-						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_NO_KILL, NULL);
+						slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_NO_KILL, SLURM_NATIVE_OPTION_NO_VALUE);
 						break;
 					case 'N' :	
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NODES, arg);
@@ -543,7 +543,7 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_PARTITION, arg);
 						break;
 					case 's' :
-						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE, NULL);
+						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_SHARE, SLURM_NATIVE_OPTION_NO_VALUE);
 						break;
 					case 'w' :
 						slurmdrmaa_add_attribute(job_desc,SLURM_NATIVE_NODELIST, arg);
@@ -585,7 +585,7 @@ slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value)
 
 		if(strlen(native_spec_copy) == 2 && native_spec_copy[0] == '-' && native_spec_copy[1] == 's')
 		{
-			slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_SHARE, NULL);
+			slurmdrmaa_add_attribute(job_desc, SLURM_NATIVE_SHARE, SLURM_NATIVE_OPTION_NO_VALUE);
 			opt = 0;
 		}
 		
