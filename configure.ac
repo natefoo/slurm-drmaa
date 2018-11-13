@@ -42,6 +42,7 @@ AC_ARG_ENABLE(development, AS_HELP_STRING([--enable-development],[enable develop
 
 # programs:
 AC_PROG_CC
+AC_PROG_CC_C99
 AC_PROG_CPP
 AC_PROG_INSTALL
 LT_INIT
@@ -57,8 +58,8 @@ if test x$RST2LATEX = x; then
 fi
 
 # check compiler / set basic flags:
-if test x$ac_cv_prog_cc_stdc = xno; then
-	AC_MSG_ERROR([ANSI C compiler is required])
+if test x$ac_cv_prog_cc_c99 = xno; then
+	AC_MSG_ERROR([C99 compiler is required])
 fi
 
 if test x$GCC = xyes; then
