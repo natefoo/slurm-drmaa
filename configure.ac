@@ -1,5 +1,5 @@
-AC_INIT([PSNC DRMAA for SLURM], m4_esyscmd_s([echo -n 1.2.0-dev. ; git rev-parse --short HEAD]), [mamonski@man.poznan.pl], [slurm-drmaa])
-AC_PREREQ(2.59)
+AC_INIT([PSNC DRMAA for SLURM], [m4_esyscmd_s(echo -n 1.2.0-dev. ; git rev-parse --short HEAD)], [mamonski@man.poznan.pl], [slurm-drmaa])
+AC_PREREQ([2.69])
 AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
 PSNC DRMAA for SLURM
@@ -37,17 +37,14 @@ AM_INIT_AUTOMAKE([foreign])
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 # command-line arguments:
-AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug],
-			[produce code suiteable for debugging and print logs at runtime]))
-AC_ARG_ENABLE(development, AC_HELP_STRING([--enable-development],
-			[enable development mode: make additional checks (suitable for PSNC DRMAA for SLURM)]))
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug],[produce code suiteable for debugging and print logs at runtime]))
+AC_ARG_ENABLE(development, AS_HELP_STRING([--enable-development],[enable development mode: make additional checks (suitable for PSNC DRMAA for SLURM)]))
 
 # programs:
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_RANLIB
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
+LT_INIT
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
@@ -114,7 +111,7 @@ esac
 # project prerequisites:
 
 # libraries:
-ACX_PTHREAD([CFLAGS="$CFLAGS $PTHREAD_CFLAGS" LIBS="$PTHREAD_LIBS $LIBS"],
+AX_PTHREAD([CFLAGS="$CFLAGS $PTHREAD_CFLAGS" LIBS="$PTHREAD_LIBS $LIBS"],
 		[AC_MSG_ERROR([POSIX threads library is required.])])
 		
 AX_SLURM([:], [AC_MSG_ERROR([

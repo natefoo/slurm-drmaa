@@ -27,9 +27,9 @@
 #
 
 AC_DEFUN([AX_SLURM],[
-AC_ARG_WITH([slurm-inc], [AC_HELP_STRING([--with-slurm-inc=<include-dir>],
+AC_ARG_WITH([slurm-inc], [AS_HELP_STRING([--with-slurm-inc=<include-dir>],
 		[Path to headers directory (containing slurm/slurm.h)])])
-AC_ARG_WITH([slurm-lib], [AC_HELP_STRING([--with-slurm-lib=<lib-dir>],
+AC_ARG_WITH([slurm-lib], [AS_HELP_STRING([--with-slurm-lib=<lib-dir>],
 		[Path to directory with SLURM libraries (containing libslurm.a)])])
 
 AC_SUBST(SLURM_INCLUDES)
