@@ -43,7 +43,7 @@ ax_slurm_msg=""
 if test x$with_slurm_inc != x; then
 	SLURM_INCLUDES="-I${with_slurm_inc}"
 else
-	SRUN_PATH=`which srun`
+	SRUN_PATH=`command -v srun`
 	if test x"$SRUN_PATH" != x; then
 		SRUN_DIR=`dirname $SRUN_PATH`
 		SLURM_HOME=`dirname $SRUN_DIR`
@@ -59,7 +59,7 @@ AC_MSG_CHECKING([for SLURM library dir])
 ax_slurm_msg=""
 if test x$with_slurm_lib == x; then
 	
-	SRUN_PATH=`which srun`
+	SRUN_PATH=`command -v srun`
 	
 	if test x"$SRUN_PATH" != x; then
 		SRUN_DIR=`dirname $SRUN_PATH`
