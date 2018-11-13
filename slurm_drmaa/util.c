@@ -144,7 +144,8 @@ slurmdrmaa_free_job_desc(job_desc_msg_t *job_desc)
 {
 	unsigned i = 0;
 	fsd_log_enter(( "" ));
-	fsd_free(job_desc->account);	
+	fsd_free(job_desc->account);
+	fsd_free(job_desc->acctg_freq);
 	fsd_free(job_desc->comment);
 	
 	for(i = 0;i<job_desc->env_size;i++)
@@ -189,7 +190,7 @@ slurmdrmaa_add_attribute(job_desc_msg_t *job_desc, unsigned attr, const char *va
 			break;
 		case SLURM_NATIVE_ACCTG_FREQ:
 			fsd_log_debug(("# acctg_freq = %s",value));
-			job_desc->acctg_freq = fsd_atoi(value);
+			job_desc->acctg_freq = fsd_strdup(value);
 			break;
 		case SLURM_NATIVE_COMMENT:
 			fsd_free(job_desc->comment);
