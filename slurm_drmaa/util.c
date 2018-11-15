@@ -356,13 +356,13 @@ slurmdrmaa_parse_additional_attr(job_desc_msg_t *job_desc,const char *add_attr,c
 {
 	char * volatile name = NULL;
 	char *value = NULL;
-	char *ctxt = NULL;
 	char * volatile add_attr_copy = fsd_strdup(add_attr);
 
 	fsd_log_enter(( "" ));
 
 	TRY
 	  {
+		char *ctxt = NULL;
 		name = fsd_strdup(strtok_r(add_attr_copy, "=", &ctxt));
 		value = strtok_r(NULL, "=", &ctxt);
 
@@ -689,7 +689,7 @@ slurmdrmaa_unset_job_id(job_id_spec_t *job_id_spec)
 void
 slurmdrmaa_set_cluster(const char * value)
 {
-	List cluster_list = NULL;
+	volatile List cluster_list = NULL;
 
 	fsd_log_enter(( "({value=%s})", value));
 

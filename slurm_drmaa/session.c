@@ -68,7 +68,7 @@ slurmdrmaa_session_run_job(
 		const fsd_template_t *jt
 		)
 {
-	char *job_id = NULL;
+	char *volatile job_id = NULL;
 	fsd_iter_t *volatile job_ids = NULL;
 
 	TRY
@@ -94,7 +94,7 @@ slurmdrmaa_session_run_bulk(
 {
 	fsd_job_t *volatile job = NULL;
 	char **volatile job_ids = NULL;
-	unsigned n_jobs = 1;
+	volatile unsigned n_jobs = 1;
 	volatile bool connection_lock = false;
 	fsd_environ_t *volatile env = NULL;
 	job_desc_msg_t job_desc;

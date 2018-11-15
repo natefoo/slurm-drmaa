@@ -227,7 +227,7 @@ slurmdrmaa_id_in_array_expr( const char *array_expr, uint32_t id ) {
 		/* values */
 		char *saveptr, *token;
 		char *array_expr_cpy, *expr;
-		int result = 0;
+		volatile int result = 0;
 
 		fsd_log_debug(( "checking values expr "));
 
@@ -257,11 +257,12 @@ slurmdrmaa_id_in_array_expr( const char *array_expr, uint32_t id ) {
     } else {
 		/* loop */
 		char *start_end_s, *start_s, *end_s, *step_s;
-		char *expr = NULL, *expr2 = NULL, *saveptr;
+		char *volatile expr = NULL, *volatile expr2 = NULL;
 		uint32_t start_i, end_i, step_i;
-		int result = 0;
+		volatile int result = 0;
 
 		TRY {
+			char *saveptr = NULL;
 			expr = fsd_strdup( array_expr );
 			start_end_s = strtok_r( expr, ":", &saveptr );
 
@@ -526,10 +527,10 @@ slurmdrmaa_job_create(
 	bool input_host = false;
 	bool output_host = false;
 	bool error_host = false;
-	bool join_files = false;
+	volatile bool join_files = false;
 	const char *value;
 	const char *const *vector;
-	const char *job_category = "default";
+	const char *volatile job_category = "default";
 	
 	job_desc->user_id = getuid();
 	job_desc->group_id = getgid();
