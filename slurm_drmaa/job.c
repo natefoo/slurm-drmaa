@@ -45,7 +45,7 @@
 
 static int
 slurmdrmaa_id_in_array_expr( const char *array_expr, uint32_t id );
-static unsigned int _slurmdrmaa_add_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size);
+static unsigned int _slurmdrmaa_add_envvar(char **envp, unsigned int envpos, char *key, char *value);
 static unsigned int _slurmdrmaa_set_prio_process_env(char **envp, unsigned int envpos);
 static unsigned int _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos);
 static unsigned int _slurmdrmaa_set_umask_env(char **envp, unsigned int envpos);
@@ -904,19 +904,16 @@ slurmdrmaa_job_create(
 }
 
 /* Create environment variables and add them to the job description's environment */
-/* TODO: bounds check all these */
 static unsigned int
-_slurmdrmaa_add_envvar(char **envp, unsigned int envpos, char *key, char *value, unsigned int value_size)
+_slurmdrmaa_add_envvar(char **envp, unsigned int envpos, char *key, char *value)
 {
 	char *envvar;
-	unsigned int len = value_size + strlen(key) + 2;  /* 2 includes the '=' */
+	unsigned int len = strlen(key) + strlen(value) + 2;  /* '=' and  '\0' */
 
-	/* FIXME: len here is going to be too long since value_size is the max right? do we care? do the strings all
-	 * need to be allocated perfectly? probably not right? */
 	fsd_calloc(envvar, len, char *);
 	fsd_snprintf(NULL, envvar, len, "%s=%s", key, value);
 	envp[envpos] = envvar;
-	fsd_log_debug(("# added to job environ: %s\n", envvar));
+	fsd_log_debug(("# added to job environ: %s", envvar));
 
 	return ++envpos;
 }
@@ -946,7 +943,7 @@ _slurmdrmaa_set_prio_process_env(char **envp, unsigned int envpos)
 	}
 
 	fsd_snprintf(NULL, prio_char, 4, "%d", retval);
-	envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_PRIO_PROCESS", prio_char, 3);
+	envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_PRIO_PROCESS", prio_char);
 
 	return envpos;
 }
@@ -958,16 +955,15 @@ _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos)
 {
 	char buf[MAXPATHLEN + 1], host[256];
 
-	/* TODO: in caller, decrease env_size and free its extra slots on error (when envpos < expected size) */
 	if ((getcwd(buf, MAXPATHLEN)) == NULL)
 		fsd_log_error(("unable to set SLURM_SUBMIT_DIR in job environment: getcwd failed: %m"));
 	else
-		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_DIR", buf, MAXPATHLEN);
+		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_DIR", buf);
 
 	if ((gethostname(host, sizeof(host))))
 		fsd_log_error(("unable to set SLURM_SUBMIT_HOST in environment: gethostname_short failed: %m"));
 	else
-		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_HOST", host, 256);
+		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_HOST", host);
 
 	return envpos;
 }
@@ -980,7 +976,7 @@ _slurmdrmaa_set_umask_env(char **envp, unsigned int envpos)
 	mode_t mask;
 
 	if (getenv("SLURM_UMASK")) {	/* use this value already in env */
-		fsd_log_debug(("skipped setting $SLURM_UMASK; it is already set in the environment: SLURM_UMASK=%s",getenv("SLURM_UMASK")));
+		fsd_log_debug(("skipped setting $SLURM_UMASK; it is already set in the environment: SLURM_UMASK=%s", getenv("SLURM_UMASK")));
 		return envpos;
 	}
 
@@ -991,7 +987,7 @@ _slurmdrmaa_set_umask_env(char **envp, unsigned int envpos)
 	fsd_snprintf(NULL, mask_char, 5, "0%d%d%d",
 		((mask>>6)&07), ((mask>>3)&07), mask&07);
 
-	envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_UMASK", mask_char, 4);
+	envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_UMASK", mask_char);
 
 	return envpos;
 }
