@@ -26,3 +26,33 @@ load helper_slurm
     [ "$status" -eq 0 ]
     [ "$output" = "OK" ]
 }
+
+@test "ensure that submit umask is passed" {
+    slurm_available || skip "Slurm unreachable"
+    umask 027
+    drmaa_run umask
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 27 ]
+    umask 022
+    drmaa_run umask
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 22 ]
+}
+
+@test "ensure that submit host and dir variables are passed" {
+    slurm_available || skip "Slurm unreachable"
+    drmaa_run 'echo "${SLURM_SUBMIT_HOST}:${SLURM_SUBMIT_DIR}"'
+    [ "$status" -eq 0 ]
+    [ "$output" = "$(hostname):$(pwd)" ]
+}
+
+@test "ensure that process priority is passed" {
+    slurm_available || skip "Slurm unreachable"
+    drmaa_run nice
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 0 ]
+    renice -n 5 $$ >/dev/null
+    drmaa_run 'echo "$SLURM_PRIO_PROCESS"'
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 5 ]
+}
