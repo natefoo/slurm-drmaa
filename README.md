@@ -157,14 +157,7 @@ Descriptions of each parameter can be found in `man sbatch`.
 Changelog
 ---------
 
--   [1.0.7](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.7/slurm-drmaa-1.0.7.tar.gz "slurm-drmaa-1.0.7.tar.gz (718.0 KB)") - user supplied (via DRMAA attribute) native specification now takes precedence over the native specification provided in configuration file.
--   [1.0.6](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.6/slurm-drmaa-1.0.6.tar.gz "slurm-drmaa-1.0.6.tar.gz (731.5 KB)") - added support for `--gres`, `--no-kill`, `--licenses`, `--mail-type=`, `--no-requeue`, `--exclude`, `--tmp` in native specification attribute. Implemented handling of missing jobs.
--   [1.0.5](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.5/slurm-drmaa-1.0.5.tar.gz "slurm-drmaa-1.0.5.tar.gz (731.6 KB)") - better handling of `--time (-t)` (thanks to Roman Valls Guimera) and added support for `--ntasks (-n)` in native specification attribute. Fixed DRMAA\_V\_EMAIL attribute handling
--   [1.0.4](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.4/slurm-drmaa-1.0.4.tar.gz "slurm-drmaa-1.0.4.tar.gz (729.0 KB)") - support for SLURM 2.3
--   [1.0.3](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.3/slurm-drmaa-1.0.3.tar.gz "slurm-drmaa-1.0.3.tar.gz (729.0 KB)") - the `--time` native option support
--   [1.0.2](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.2/slurm_drmaa-1.0.2.tar.gz "slurm_drmaa-1.0.2.tar.gz (727.5 KB)") - environment variables are now propagated from submission host to the worker nodes
--   [1.0.1](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.1/slurm_drmaa-1.0.1.tar.gz "slurm_drmaa-1.0.1.tar.gz (709.5 KB)") - added support for SLURM 2.2
--   [1.0.0](https://github.com/natefoo/slurm-drmaa/releases/download/1.0.0/slurm_drmaa-1.0.0.tar.gz "slurm_drmaa-1.0.0.tar.gz (708.9 KB)") - first public release
+See [CHANGELOG.md](CHANGELOG.md)
 
 ### Known bugs and limitations
 
@@ -236,7 +229,6 @@ Links
 - [Open Grid Forum][ogf]
 - [DRMAA 1.0 specification][drmaa-v133]
 - [Official DRMAA test-suite](http://drmaa.org/testsuite.php)
-- [Smoa Computing:](http://apps.man.poznan.pl/trac/smoa-comp) http://apps.man.poznan.pl/trac/smoa-comp
 - [Slurm Workload Manager][slurm]
 
 ### Software using DRMAA for Slurm
