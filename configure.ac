@@ -178,6 +178,7 @@ fi
 
 AC_CONFIG_FILES([
 	Makefile
+	test/Makefile
 	slurm_drmaa/Makefile
 ])
 AC_CONFIG_HEADERS([config.h])

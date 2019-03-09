@@ -5,11 +5,20 @@ os:
 services:
   - docker
 env:
-  - DOCKER_IMAGE=centos:6
+  #  need to update slurm rpms
+  #- DOCKER_IMAGE=centos:6
   - DOCKER_IMAGE=centos:7
   - DOCKER_IMAGE=debian:stable
   # https://bugs.launchpad.net/ubuntu/+source/slurm-llnl/+bug/1802374
   #- DOCKER_IMAGE=ubuntu:latest
+
+before_install:
+  # Docker version in the current Travis image doesn't support `docker run --workdir`
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - git clone https://github.com/bats-core/bats-core.git/ .ci/bats
 
 before_script:
   # these steps prep the source as if it were a distribution tarball
@@ -19,24 +28,16 @@ before_script:
   - make -C drmaa_utils/drmaa_utils conf_tab.c conf_tab.h datetime_tab.c datetime_tab.h drmaa_attrib.c timedelta.c
   - make -C drmaa_utils distclean
   # set up build env
-  - |
-    case "$DOCKER_IMAGE" in
-        centos:6)
-            docker run --cidfile .cid $DOCKER_IMAGE /bin/sh -c 'curl -o /etc/yum.repos.d/galaxy.repo https://depot.galaxyproject.org/yum/galaxy.repo && yum install -y "@development tools" slurm slurm-devel'
-            ;;
-        centos:*)
-            docker run --cidfile .cid $DOCKER_IMAGE /bin/sh -c 'yum-config-manager --add-repo https://depot.galaxyproject.org/yum/galaxy.repo && yum install -y "@development tools" slurm slurm-devel'
-            ;;
-        debian:*|ubuntu:*)
-            docker run --cidfile .cid --env DEBIAN_FRONTEND=noninteractive $DOCKER_IMAGE /bin/sh -c 'apt-get -qq update && apt-get install -y build-essential slurm-wlm libslurm-dev libslurmdb-dev'
-            ;;
-        *)
-            echo "unsupported image: $DOCKER_IMAGE"
-            return 1
-            ;;
-    esac
-  - docker commit $(cat .cid) ci/$DOCKER_IMAGE
+  - docker build --build-arg from=$DOCKER_IMAGE --build-arg uid=$(id -u) --build-arg gid=$(id -g) -t ci/$DOCKER_IMAGE -f .ci/Dockerfile .ci
+  #- SLURM_USER=$(docker run ci/$DOCKER_IMAGE /bin/sh -c 'echo $(id -u slurm):$(id -g slurm)')
 
 script:
-  - docker run --volume $(pwd):$(pwd) --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE ./configure
-  - docker run --volume $(pwd):$(pwd) --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE make
+  - docker run --volume $(pwd):$(pwd) --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE ./configure --prefix=/ci
+  - docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE make install
+  - cid=$(docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --detach ci/$DOCKER_IMAGE /runslurm.sh)
+  - for i in {0..29}; do [ "$(docker exec $cid sinfo --noheader --nodes=localhost --format=%t --responding --states=IDLE)" == "idle" ] && break || { echo "waiting for slurmd..."; sleep 1; }; done
+  - docker exec $cid scontrol show node localhost
+  - docker exec $cid scontrol show partition debug
+  - if [ $i -eq 29 ]; then echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; travis_terminate 1; fi
+  #- bash $(pwd)/.ci/runtest.sh $cid 1
+  - docker exec --workdir $(pwd) $cid make check || { echo "[test-suite.log]"; cat test/test-suite.log; echo "[functional-basic.log]"; cat test/functional-basic.log; travis_terminate 1; }
