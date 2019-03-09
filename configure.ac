@@ -1,4 +1,4 @@
-AC_INIT([DRMAA for Slurm], [m4_esyscmd_s(echo -n 1.2.0-dev. ; git rev-parse --short HEAD)], [nate@bx.psu.edu], [slurm-drmaa])
+AC_INIT([DRMAA for Slurm], [m4_esyscmd_s(./m4/ac_version.sh)], [nate@bx.psu.edu], [slurm-drmaa])
 AC_PREREQ([2.69])
 AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
