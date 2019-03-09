@@ -24,5 +24,4 @@ EXTRA_DIST = \
  slurm-drmaa.spec \
  m4/missing-dev-prog.sh
 
-SUBDIRS = drmaa_utils slurm_drmaa 
-
+SUBDIRS = drmaa_utils slurm_drmaa test
