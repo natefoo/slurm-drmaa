@@ -50,14 +50,6 @@ LT_INIT
 AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
-AX_DOCUTILS()
-if test x$RST2HTML = x; then
-	RST2HTML="sh m4/missing-dev-prog.sh docutils"
-fi
-if test x$RST2LATEX = x; then
-	RST2LATEX="sh m4/missing-dev-prog.sh docutils"
-fi
-
 # check compiler / set basic flags:
 if test x$ac_cv_prog_cc_c99 = xno; then
 	AC_MSG_ERROR([C99 compiler is required])
