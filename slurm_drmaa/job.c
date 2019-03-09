@@ -1,6 +1,10 @@
 /*
  * PSNC DRMAA for SLURM
- * Copyright (C) 2011 Poznan Supercomputing and Networking Center
+ * Copyright (C) 2011-2015 Poznan Supercomputing and Networking Center
+ * Copyright (C) 2014-2019 The Pennsylvania State University
+ * Portions Copyright (C) 2006-2007 The Regents of the University of California.
+ * Portions Copyright (C) 2008-2010 Lawrence Livermore National Security.
+ * Portions Copyright (C) 2010-2017 SchedMD LLC.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
