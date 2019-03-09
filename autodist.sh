@@ -21,6 +21,9 @@ RUN apt-get -qqy update && apt-get -y install --no-install-recommends build-esse
     libtool libslurm-dev libslurmdb-dev slurm-wlm git ca-certificates bison
 RUN apt-get -y clean
 
+RUN git clone https://github.com/bats-core/bats-core.git/ /bats
+RUN echo 'PATH=/bats/bin:${PATH}' >> /etc/profile
+
 ADD docker-make-release.sh /
 
 ENTRYPOINT ["/bin/bash", "/docker-make-release.sh"]
