@@ -1,7 +1,6 @@
-/* $Id: $ */
 /*
- * PSNC DRMAA for SLURM
- * Copyright (C) 2011 Poznan Supercomputing and Networking Center
+ * DRMAA for Slurm
+ * Copyright (C) 2014-2019 The Pennsylvania State University
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

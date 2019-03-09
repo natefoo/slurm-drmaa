@@ -1,9 +1,10 @@
-AC_INIT([PSNC DRMAA for SLURM], [m4_esyscmd_s(echo -n 1.2.0-dev. ; git rev-parse --short HEAD)], [mamonski@man.poznan.pl], [slurm-drmaa])
+AC_INIT([DRMAA for Slurm], [m4_esyscmd_s(echo -n 1.2.0-dev. ; git rev-parse --short HEAD)], [nate@bx.psu.edu], [slurm-drmaa])
 AC_PREREQ([2.69])
 AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
-PSNC DRMAA for SLURM
-Copyright (C) 2011 Poznan Supercomputing and Networking Center
+DRMAA for Slurm
+Copyright (C) 2011-2015 Poznan Supercomputing and Networking Center
+Copyright (C) 2014-2019 The Pennsylvania State University
 
 
 This program is free software: you can redistribute it and/or modify
@@ -38,7 +39,7 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 # command-line arguments:
 AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug],[produce code suiteable for debugging and print logs at runtime]))
-AC_ARG_ENABLE(development, AS_HELP_STRING([--enable-development],[enable development mode: make additional checks (suitable for PSNC DRMAA for SLURM)]))
+AC_ARG_ENABLE(development, AS_HELP_STRING([--enable-development],[enable development mode: make additional checks (suitable for DRMAA for Slurm)]))
 
 # programs:
 AC_PROG_CC
@@ -116,7 +117,7 @@ AX_PTHREAD([CFLAGS="$CFLAGS $PTHREAD_CFLAGS" LIBS="$PTHREAD_LIBS $LIBS"],
 		[AC_MSG_ERROR([POSIX threads library is required.])])
 		
 AX_SLURM([:], [AC_MSG_ERROR([
-SLURM libraries/headers not found;
+Slurm libraries/headers not found;
 add --with-slurm-inc and --with-slurm-lib with appropriate locations.]) ])
 if ! echo $ac_configure_args | ${EGREP} -q '(--)(exec-)?prefix'; then
 	if test ${sysconfdir} == '${prefix}/etc'; then

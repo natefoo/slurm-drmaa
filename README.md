@@ -1,16 +1,32 @@
-PSNC DRMAA for SLURM
-====================
+DRMAA for Slurm
+===============
 
-**Please note:** this is only [one slurm-drmaa user](https://github.com/natefoo/)'s import/clone and fork of the canonical [PSNC slurm-drmaa](http://apps.man.poznan.pl/trac/slurm-drmaa).
+**Please note:** DRMAA for Slurm is a continuation of [PSNC DRMAA for SLURM][psnc-slurm-drmaa-trac] by [an unrelated developer][natefoo].
+
+[psnc-slurm-drmaa-trac]: http://apps.man.poznan.pl/trac/slurm-drmaa
+[natefoo]: https://github.com/natefoo/
 
 Introduction
 ------------
 
-PSNC DRMAA for [Slurm Workload Manager (Slurm)](https://slurm.schedmd.com/) is an implementation of [Open Grid Forum](http://www.gridforum.org/) [DRMAA 1.0](http://www.drmaa.org/) (Distributed Resource Management Application API) [specification](http://www.ogf.org/documents/GFD.133.pdf) for submission and control of jobs to Slurm. Using DRMAA, grid applications builders, portal developers and ISVs can use the same high-level API to link their software with different cluster/resource management systems.
+DRMAA for [Slurm Workload Manager][slurm] (Slurm) is an implementation of [Open Grid Forum][ogf] [Distributed Resource Management Application API][drmaa] (DRMAA) [version 1][drmaa-v133] for submission and control of jobs to Slurm. Using DRMAA, grid applications builders, portal developers and ISVs can use the same high-level API to link their software with different cluster/resource management systems.
 
-This software also enables the integration of [QCG-Computing](http://www.qoscosgrid.org/trac/qcg-computing/) with the underlying Slurm system for remote multi-user job submission and control over Web Services.
+[slurm]: https://slurm.schedmd.com/
+[ogf]: http://www.gridforum.org/
+[drmaa]: http://www.drmaa.org/
+[drmaa-v133]: http://www.ogf.org/documents/GFD.133.pdf
 
-Although this fork is not the canonical source of slurm-drmaa, it has become mildly popular among the [Galaxy](http://galaxyproject.org/) community, especially as development on PSNC slurm-drmaa has slowed folliwing the death of the previous mantainer, Mariusz Mamonski. I will do my best to incorporate both upstream and contributed changes, but credit belongs to the original authors (found below). In this repository, I've imported the SVN history and attempted to attribute contributions correctly.
+### History
+
+DRMAA for Slurm was originally developed at the [Poznań Supercomputing and Networking Center][psnc] as [PSNC DRMAA for SLURM][psnc-slurm-drmaa-trac]. Following the unexpected death in 2013 of its primary maintainer, Mariusz Mamoński, there has been little additional development from PSNC, and no new releases.
+
+[This fork][slurm-drmaa] is maintained by [Nate Coraor][natefoo] and was originally created in 2014 to add support for Slurm's `--clusters` (`-M`) option. Since that time, others have found it useful and additional features and bug fixes have been added. However, the majority of the credit for this work belongs to the original authors (found below). In 2017, current maintainer Piotr Kopta created [psnc-apps/slurm-drmaa][psnc-slurm-drmaa-github] in Github, a snapshot of the unreleased 1.2.0 version (upon which this fork is also based) that has seen occasional work.
+
+The title of the software in this fork has been changed from *PSNC DRMAA for SLURM* to simply *DRMAA for Slurm*. This change was made in order to alleviate confusion and differentiate from the canonical version. Additionally, this fork is not affiliated with PSNC; as such, releasing this software under PSNC's name would not be appropriate. However, this fork's maintainer is incredibly grateful for the work of the original authors of this software and the name change is in no way intended to minimize the efforts of those people.
+
+[psnc]: http://www.man.poznan.pl/
+[slurm-drmaa]: https://github.com/natefoo/slurm-drmaa/
+[psnc-slurm-drmaa-github]: https://github.com/psnc-apps/slurm-drmaa
 
 Download
 --------
@@ -20,14 +36,14 @@ DRMAA for Slurm is distributed as a source package which can be downloaded via t
 Installation
 ------------
 
-To compile and install the library just go to main source directory and type:
+To compile and install the library, go to main source directory and type:
 
 ```console
 $ ./configure [options] && make
 $ sudo make install
 ```
 
-The library was tested with Slurm versions 14.03, 14.11, and 15.08. If you encountered any problems using the library on the different systems, please see the [contact](#contact) section.
+The library uses the standard GNU Autotools system, so standard `configure` arguments are available; see `./configure --help` for a full list. The library was tested with Slurm versions 16.05 and 18.08. If you encountered any problems using the library on different systems, please see the [contact](#contact) section.
 
 Notable `./configure` script options:
 
@@ -47,28 +63,30 @@ Notable `./configure` script options:
 >
 > > Compiles library with debugging enabled (with debugging symbols not stripped, without optimizations, and with many log messages enabled). Useful when you are to debug DRMAA enabled application or investigate problems with DRMAA library itself.
 
-There are no unusual requirements for basic usage of library: ANSI C compiler and standard make program should suffice. If you have taken sources directly from this repository or wish to run test-suite you would need additional [developer tools](#developer-tools).
+There are no unusual requirements for basic usage of library: a C99 compiler and standard make program should suffice. If you have taken sources directly from this repository or wish to run test-suite you would need additional [developer tools](#developer-tools).
 
 Configuration
 -------------
 
-During DRMAA session initialization (`drmaa_init`) library tries to read its configuration parameters from locations: `/etc/slurm_drmaa.conf`, `~/.slurm_drmaa.conf` and from file given in `SLURM_DRMAA_CONF` environment variable (if set to non-empty string). If multiple configuration sources are present then all configurations are merged with values from user-defined files taking precedence (in following order: `$SLURM_DRMAA_CONF`, `~/.slurm_drmaa.conf`, `/etc/slurm_drmaa.conf`).
+During DRMAA session initialization (`drmaa_init`), the library tries to read its configuration parameters from locations: `/etc/slurm_drmaa.conf`, `~/.slurm_drmaa.conf` and from the file given in the `$SLURM_DRMAA_CONF` environment variable (if set to a non-empty string). If multiple configuration sources are present then all configurations are merged with values from user-defined files taking precedence (in the following order: `$SLURM_DRMAA_CONF`, `~/.slurm_drmaa.conf`, `/etc/slurm_drmaa.conf`).
 
 Currently recognized configuration parameters are:
 
-cache\_job\_state  
-According to DRMAA specification every `drmaa_job_ps()` call should query DRM system for job state. With this option one may optimize communication with DRM. If set to positive integer `drmaa_job_ps()` returns remembered job state without communicating with DRM for `cache_job_state` seconds since last update. By default library conforms to the specification (no caching will be performed).
+> `cache_job_state`
+>
+> > According to the DRMAA specification, every `drmaa_job_ps()` call should query the DRM system for job state. With this option one may optimize communication with the DRM. If set to a positive integer, `drmaa_job_ps()` returns the remembered job state without communicating with the DRM for `cache_job_state` seconds since the last update. By default the library conforms to the specification (no caching will be performed).
+> >
+> > Type: integer, default: 0
 
-> Type: integer, default: 0
-
-job\_categories  
-Dictionary of job categories. Its keys are job categories names mapped to [native specification](#native-specification) strings. Attributes set by job category can be overridden by corresponding DRMAA attributes or native specification. Special category name `default` is used when `drmaa_job_category` job attribute was not set.
-
-> Type: dictionary with string values, default: empty dictionary
+> `job_categories`
+>
+> > Dictionary of job categories. Its keys are job categories names mapped to [native specification](#native-specification) strings. Attributes set by job category can be overridden by corresponding DRMAA attributes or native specification. The special category name `default` is used when the `drmaa_job_category` job attribute is not set.
+> >
+> > Type: dictionary with string values, default: empty dictionary
 
 ### Configuration file syntax
 
-Configuration file is in a form of a dictionary. Dictionary is set of zero or more key-value pairs. Key is a string while value could be a string, an integer or another dictionary.
+The configuration file is in a form of a dictionary. A dictionary is set of zero or more key-value pairs. A key is a string, while a value can be a string, an integer or another dictionary.
 
 ```
   configuration: dictionary | dictionary_body
@@ -82,12 +100,10 @@ Configuration file is in a form of a dictionary. Dictionary is set of zero or mo
   integer: [0-9]+
 ```
 
-
-
 Native specification
 --------------------
 
-DRMAA interface allows to pass DRM dependent job submission options. Those options may be specified directly by setting `drmaa_native_specification` job template attribute or indirectly by the `drmaa_job_category` job template attribute. The legal format of the native options looks like:
+The DRMAA interface allows passing DRM-dependent job submission options. Those options may be specified directly by setting the `drmaa_native_specification` job template attribute or indirectly by the `drmaa_job_category` job template attribute. The legal format of the native options looks like:
 
 ```
   -A My_job_name -s -N 1-10
@@ -136,7 +152,7 @@ favor of the corresponding DRMAA job attributes:
 | -o, --output=*pattern*     | drmaa_error_path    | Connect the batch script's standard output directly to the file name specified in the pattern |
 | -t, --time=*hours:minutes* | drmaa_wct_hlimit    | Set a maximum job wallclock time                                                              |
 
-Description of each parameter can be found in `man sbatch`.
+Descriptions of each parameter can be found in `man sbatch`.
 
 Changelog
 ---------
@@ -152,7 +168,7 @@ Changelog
 
 ### Known bugs and limitations
 
-Library covers all [DRMAA 1.0 specification](http://www.ogf.org/documents/GFD.133.pdf) with exceptions listed below. It was successfully tested with [Slurm 14.03, 14.11, and 15.08](https://slurm.schedmd.com/). Known limitations:
+The library covers all of the [DRMAA 1.0 specification][drmaa-v133] with exceptions listed below. It was successfully tested with [Slurm 16.05 and 18.08][slurm]. Known limitations:
 
 -   `drmaa_control` options `DRMAA_CONTROL_HOLD`, `DRMAA_CONTROL_RELEASE` are only available for users being Slurm administrators (in version prior 2.2)
 -   `drmaa_control` options `DRMAA_CONTROL_SUSPEND`, `DRMAA_CONTROL_RESUME` are only available for users being Slurm administrators
@@ -163,19 +179,21 @@ Library covers all [DRMAA 1.0 specification](http://www.ogf.org/documents/GFD.13
 Development and Pre-releases
 ----------------------------
 
-Please note the `./autogen.sh` and `./autoclean.sh` scripts which calls the autotools command chain in appropriate order.
-
-**note:** This repository depends on [DRMAA Utils](https://github.com/natefoo/drmaa-utils/), which is configured as a submodule. When cloning this repository, you should clone recursively, e.g.:
+**note:** This repository depends on [FedStage DRMAA Utils][drmaa-utils], which is configured as a submodule. When cloning this repository, you should clone recursively, e.g.:
 
 ```console
 $ git clone --recursive https://github.com/natefoo/slurm-drmaa.git
 ```
 
-**note:** You need some developer tools to compile the source from git, rather than from a tarball release. Also, the development version may not always compile.
+The source repository does not contain Autotools-generated artifacts such as `configure` and `Makefile`. Please note the `./autogen.sh` and `./autoclean.sh` scripts which call the Autotools command chain in the appropriate order to generate these artifacts.
+
+**note:** You need some developer tools to compile the source from git.
+
+[drmaa-utils]: https://github.com/natefoo/drmaa-utils/
 
 ### Developer tools
 
-Although not needed for library user the following tools may be required if you intend to develop PSNC DRMAA for Slurm:
+Although not needed to use the library or to compile from source distribution tarballs, user the following tools may be required if you intend to develop DRMAA for Slurm from git:
 
 -   GNU autotools
     -   autoconf (tested with version 2.67)
@@ -197,31 +215,40 @@ The library was developed by:
 
 This library relies heavily on the *Fedstage DRMAA utils* code developed by:
 
--   Lukasz Ciesnik.
+-   Lukasz Ciesnik
+
+The maintainer of [this fork][slurm-drmaa] is:
+
+-   Nate Coraor
+
+with [additional contributors][https://github.com/natefoo/slurm-drmaa/graphs/contributors].
 
 ### Contact
 
-In case of any problems or questions regarding PSNC DRMAA for Slurm do not hesitate to contact us:
+You can submit [issues](https://github.com/natefoo/slurm-drmaa/issues) and [pull requests](https://github.com/natefoo/slurm-drmaa/pulls) for DRMAA for Slurm in GitHub.
 
--   QosCosGrid Development Team - qcg(at)plgrid.pl
+Links
+-----
 
-You can submit [issues](https://github.com/natefoo/slurm-drmaa/issues) and [pull requests](https://github.com/natefoo/slurm-drmaa/pulls) for this fork of DRMAA for Slurm in GitHub.
-
-
-### Links
-
-- [PSNC slurm-drmaa:](http://apps.man.poznan.pl/trac/slurm-drmaa) http://apps.man.poznan.pl/trac/slurm-drmaa
-- [DRMAA:](http://www.drmaa.org/) http://www.drmaa.org/
-- [Open Grid Forum:](http://www.gridforum.org/) http://www.gridforum.org/
-- [DRMAA 1.0 specification:](http://www.ogf.org/documents/GFD.133.pdf) http://www.ogf.org/documents/GFD.133.pdf
-- [Official DRMAA test-suite:](http://drmaa.org/testsuite.php) http://drmaa.org/testsuite.php
+- [PSNC DRMAA for SLURM][psnc-slurm-drmaa-trac]
+- [PSNC DRMAA for SLURM][psnc-slurm-drmaa-github] in Github
+- [DRMAA][drmaa]
+- [Open Grid Forum][ogf]
+- [DRMAA 1.0 specification][drmaa-v133]
+- [Official DRMAA test-suite](http://drmaa.org/testsuite.php)
 - [Smoa Computing:](http://apps.man.poznan.pl/trac/smoa-comp) http://apps.man.poznan.pl/trac/smoa-comp
-- [Slurm Workload Manager:](https://slurm.schedmd.com/) https://slurm.schedmd.com/
-- [Bison:](http://www.gnu.org/software/bison/) http://www.gnu.org/software/bison/
+- [Slurm Workload Manager][slurm]
 
-### License
+### Software using DRMAA for Slurm
 
-Copyright (C) 2011 Poznan Supercomputing and Networking Center
+- [QCG-Computing](http://www.qoscosgrid.org/trac/qcg-computing/): remote multi-user job submission and control over Web Services
+- [Galaxy](https://galaxyproject.org/): an open, web-based platform for accessible, reproducible, and transparent computational biomedical research
+
+License
+-------
+
+Copyright (C) 2011-2015 Poznan Supercomputing and Networking Center
+Copyright (C) 2014-2019 The Pennsylvania State University
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

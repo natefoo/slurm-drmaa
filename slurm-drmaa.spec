@@ -2,7 +2,7 @@ Name:		slurm-drmaa
 Version:	dev
 Release:	1%{?dist}
 
-Summary:	PSNC DRMAA for SLURM
+Summary:	DRMAA for Slurm
 Group:		Development/Libraries
 License:	GPLv3+
 URL:		https://github.com/natefoo/slurm-drmaa
@@ -14,12 +14,11 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}
 Source:		%{name}-%{version}.tar.gz
 
 %description
-PSNC DRMAA for Simple Linux Utility for Resource Management (SLURM) is an
-implementation of Open Grid Forum DRMAA 1.0 (Distributed Resource Management
-Application API)  specification for submission and control of jobs to SLURM.
-Using DRMAA, grid applications builders, portal developers and ISVs can use the
-same high-level API to link their software with different cluster/resource
-management systems.
+DRMAA for Slurm is an implementation of Open Grid Forum DRMAA 1.0 (Distributed
+Resource Management Application API) specification for submission and control of
+jobs to SLURM.  Using DRMAA, grid applications builders, portal developers and
+ISVs can use the same high-level API to link their software with different
+cluster/resource management systems.
 
 %prep
 %setup
