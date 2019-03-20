@@ -51,6 +51,11 @@ cd /slurm-drmaa
 sed -i -E -e 's/^(AC_INIT\(.*)m4_esyscmd_s\([^)]+\)(.*)$/\1'$(eval $(grep '^AC_INIT(' configure.ac | sed -E 's/^AC_INIT\(.*m4_esyscmd_s\(([^)]+).*$/\1/'))'\2/' \
           -e 's/^(AC_REVISION\()\[m4_esyscmd_s\([^)]+\)\](.*)$/\1['$(eval $(grep '^AC_REVISION(' configure.ac | sed -E 's/^AC_REVISION\(\[m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' configure.ac
 
+# also for drmaa_utils
+cd drmaa_utils
+sed -i -E -e 's/^(AC_REVISION\()\[m4_esyscmd_s\([^)]+\)\](.*)$/\1['$(eval $(grep '^AC_REVISION(' configure.ac | sed -E 's/^AC_REVISION\(\[m4_esyscmd_s\(\[([^]]+).*$/\1/'))']\2/' configure.ac
+cd ..
+
 ./autoclean.sh || true
 ./autogen.sh
 ./configure
