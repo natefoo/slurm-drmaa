@@ -70,7 +70,7 @@ if [ "${PACKAGE_VERSION}" != "${PACKAGE_RELEASE}" ]; then
 fi
 
 make dist
-DISTCHECK_CONFIGURE_FLAGS="CFLAGS='-I../../../../drmaa_utils -I../../..'" make distcheck
+SLURM_CONF=/dev/null DISTCHECK_CONFIGURE_FLAGS="CFLAGS='-I../../../../drmaa_utils -I../../..'" make distcheck
 EOF
 
 docker build -t $dimg $dctx
