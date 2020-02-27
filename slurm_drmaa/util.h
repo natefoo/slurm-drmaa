@@ -37,6 +37,5 @@ void slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value);
 char * slurmdrmaa_set_job_id(job_id_spec_t *job_id_spec);
 char * slurmdrmaa_unset_job_id(job_id_spec_t *job_id_spec);
 void slurmdrmaa_set_cluster(const char * value);
-char * repl_str(const char *str, const char *from, const char *to);
 
 #endif /* __SLURM_DRMAA__UTIL_H */
