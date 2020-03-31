@@ -71,16 +71,22 @@ if test x$with_slurm_lib == x; then
 fi
 AC_MSG_RESULT([$with_slurm_lib$ax_slurm_msg])
 
-
-SLURM_LIBS="-lslurmdb -lslurm "
 SLURM_LDFLAGS="-L${with_slurm_lib}"
-
 
 CPPFLAGS_save="$CPPFLAGS"
 LDFLAGS_save="$LDFLAGS"
 LIBS_save="$LIBS"
+LD_LIBRARY_PATH_save="$LD_LIBRARY_PATH"
 CPPFLAGS="$CPPFLAGS $SLURM_INCLUDES"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${with_slurm_lib}"
 LDFLAGS="$LDFLAGS $SLURM_LDFLAGS"
+
+SLURM_LIBS="-lslurm "
+dnl Check if slurmdb functions have been merged into the slurm library
+dnl If slurmdb has not been merged, add it to the working slurm libs
+AC_CHECK_LIB(slurm, slurmdb_users_get, [], [SLURM_LIBS="$SLURM_LIBS-lslurmdb "])
+AC_MSG_RESULT(Using slurm libraries $SLURM_LIBS)
+
 LIBS="$LIBS $SLURM_LIBS"
 
 ax_slurm_ok="no"
@@ -101,6 +107,7 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[ #include "slurm/slurm.h" ]],
 CPPFLAGS="$CPPFLAGS_save"
 LDFLAGS="$LDFLAGS_save"
 LIBS="$LIBS_save"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH_save"
 AC_MSG_RESULT([$ax_slurm_ok])
 
 if test x"$ax_slurm_ok" = xyes; then
