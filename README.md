@@ -214,7 +214,7 @@ The maintainer of [this fork][slurm-drmaa] is:
 
 -   Nate Coraor
 
-with [additional contributors][https://github.com/natefoo/slurm-drmaa/graphs/contributors].
+with [additional contributors](https://github.com/natefoo/slurm-drmaa/graphs/contributors).
 
 ### Contact
 
