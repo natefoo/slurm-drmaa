@@ -1,6 +1,22 @@
 Changelog
 =========
 
+1.1.1 (2020-03-31)
+------------------
+
+### New Features and Enhancements
+
+- Slurm 20.02 compatibility ([PR #34][pr34]; thanks @EricR86)
+- Builds are now (minimally) tested against multiple Slurm versions ([PR #36][pr36])
+
+### Bug Fixes
+
+- Minor CI fixes ([PR #35][pr35]; thanks @EricR86)
+
+[pr34]: https://github.com/natefoo/slurm-drmaa/pull/34
+[pr35]: https://github.com/natefoo/slurm-drmaa/pull/35
+[pr36]: https://github.com/natefoo/slurm-drmaa/pull/36
+
 1.1.0 (2019-03-09)
 ------------------
 
