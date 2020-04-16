@@ -459,7 +459,9 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 		fsd_log_info(( "Job %s has status %d, looking into accounting infos", self->job_id, self->state ));
 
 		job_cond = calloc(1, sizeof(slurmdb_job_cond_t));
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(19,5,0)
 		job_cond->db_flags = SLURMDB_JOB_FLAG_NOTSET;
+#endif
 		job_cond->flags |= JOBCOND_FLAG_NO_TRUNC;
 		job_cond->step_list = slurm_list_create(slurmdb_destroy_selected_step);
 
