@@ -217,3 +217,8 @@ fsd_drmaa_singletone_t _fsd_drmaa_singletone = {
 	slurmdrmaa_wcoredump,
 	slurmdrmaa_wifaborted
 };
+
+extern bool running_in_slurmctld(void)
+{
+    return false;
+}
