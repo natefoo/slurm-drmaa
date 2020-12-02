@@ -463,11 +463,11 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 		job_cond->db_flags = SLURMDB_JOB_FLAG_NOTSET;
 #endif
 		job_cond->flags |= JOBCOND_FLAG_NO_TRUNC;
-		job_cond->step_list = slurm_list_create(slurmdb_destroy_selected_step);
+		job_cond->step_list = slurm_list_create(slurm_destroy_selected_step);
 
 		slurm_addto_step_list(job_cond->step_list, self->job_id);
 		job_cond->usage_end = time(NULL);
-        acct_db_conn = slurmdb_connection_get();
+		acct_db_conn = slurmdb_connection_get(NULL);
 		jobs = slurmdb_jobs_get(acct_db_conn, job_cond);
 		slurmdb_connection_close(&acct_db_conn);
 		slurm_list_destroy(job_cond->step_list);
