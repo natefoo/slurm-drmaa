@@ -1,6 +1,14 @@
 Changelog
 =========
 
+HEAD (unreleased)
+-----------------
+
+### New Features and Enhancements
+
+- Make compatible with Slurm 20.11 (@holtgrewe).
+- Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) (@holtgrewe)
+
 1.1.1 (2020-03-31)
 ------------------
 

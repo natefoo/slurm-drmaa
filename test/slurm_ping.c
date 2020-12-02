@@ -3,13 +3,13 @@
 /* Slurm doesn't provide a public method to just use the local config, which we need in order to set a timeout without
  * having to contact slurmctld first... */
 extern int slurm_conf_destroy(void);
-extern slurm_ctl_conf_t *slurm_conf_lock(void);
+extern slurm_conf_t *slurm_conf_lock(void);
 extern void slurm_conf_unlock(void);
 
 int main(int argc, char **argv) {
 	int status = 1;
 
-	slurm_ctl_conf_t *slurm_ctl_conf_ptr = slurm_conf_lock();
+	slurm_conf_t *slurm_ctl_conf_ptr = slurm_conf_lock();
 	slurm_ctl_conf_ptr->msg_timeout = 3;
 	slurm_conf_unlock();
 

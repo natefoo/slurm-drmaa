@@ -27,6 +27,8 @@
 extern void * slurm_list_peek (List l);
 extern void * slurm_list_remove (ListIterator i);
 
+extern int slurm_addto_step_list(List step_list, char *names);
+
 /* --clusters is not supported with Slurm < 15.08, but these are defined to
  * avoid compiler warnings
  */
