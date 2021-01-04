@@ -63,7 +63,7 @@ slurmdrmaa_get_DRM_system( fsd_drmaa_singletone_t *self )
 	if(slurmdrmaa_version[0] == '\0') /*no locks as drmaa_get_drm_system is usually called only once */
 	{
 #if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(20,11,0)
-        slurm_conf_t * conf_info_msg_ptr = NULL;
+		slurm_conf_t * conf_info_msg_ptr = NULL; 
 #else
 		slurm_ctl_conf_t * conf_info_msg_ptr = NULL; 
 #endif
