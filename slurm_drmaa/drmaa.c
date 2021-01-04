@@ -62,7 +62,11 @@ slurmdrmaa_get_DRM_system( fsd_drmaa_singletone_t *self )
 {
 	if(slurmdrmaa_version[0] == '\0') /*no locks as drmaa_get_drm_system is usually called only once */
 	{
+#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(20,11,0)
+        slurm_conf_t * conf_info_msg_ptr = NULL;
+#else
 		slurm_ctl_conf_t * conf_info_msg_ptr = NULL; 
+#endif
 		if ( slurm_load_ctl_conf ((time_t) NULL, &conf_info_msg_ptr ) == -1 ) 
 		{ 
 			fsd_log_error(("slurm_load_ctl_conf error: %s",slurm_strerror(slurm_get_errno())));
