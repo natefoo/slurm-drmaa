@@ -1,6 +1,7 @@
 /*
  * PSNC DRMAA for SLURM
- * Copyright (C) 2011 Poznan Supercomputing and Networking Center
+ * Copyright (C) 2011-2015 Poznan Supercomputing and Networking Center
+ * Copyright (C) 2014-2021 The Pennsylvania State University
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -62,7 +63,7 @@ slurmdrmaa_get_DRM_system( fsd_drmaa_singletone_t *self )
 {
 	if(slurmdrmaa_version[0] == '\0') /*no locks as drmaa_get_drm_system is usually called only once */
 	{
-#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(20,11,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(20,11,0)
 		slurm_conf_t * conf_info_msg_ptr = NULL; 
 #else
 		slurm_ctl_conf_t * conf_info_msg_ptr = NULL; 
