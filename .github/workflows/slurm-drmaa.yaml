@@ -1,0 +1,62 @@
+name: slurm-drmaa
+#on: [push, pull_request]
+on: [pull_request]
+jobs:
+  functional:
+    name: Functional Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 18.08
+        - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 19.05
+        - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 20.02
+        - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 20.11
+        - os: ubuntu-latest
+          docker_image: debian:buster
+          slurm_version: apt
+    env:
+      DOCKER_IMAGE: ${{ matrix.docker_image }}
+      SLURM_VERSION: ${{ matrix.slurm_version }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Fetch bats
+      run: git clone https://github.com/bats-core/bats-core.git/ .ci/bats
+    - name: Install autogen dependencies
+      run: sudo apt-get install -y gperf ragel bison
+    - name: Run autogen
+      run: sh autogen.sh
+    - name: Configure drmaa_utils
+      run: cd drmaa_utils && ./configure
+    - name: Build drmaa_utils
+      run: make -C drmaa_utils/drmaa_utils conf_tab.c conf_tab.h datetime_tab.c datetime_tab.h drmaa_attrib.c timedelta.c
+    - name: Clean drmaa_utils
+      run: make -C drmaa_utils distclean
+    - name: Build Docker image
+      run: docker build --build-arg from=$DOCKER_IMAGE --build-arg uid=$(id -u) --build-arg gid=$(id -g) --build-arg version=$SLURM_VERSION -t ci/$DOCKER_IMAGE -f .ci/Dockerfile .ci
+    - name: Run ./configure
+      run: docker run --volume $(pwd):$(pwd) --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE ./configure --prefix=/ci
+    - name: Run make install
+      run: docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE make install
+    - name: Run Slurm
+      run: echo cid=$(docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --detach ci/$DOCKER_IMAGE /runslurm.sh) >> $GITHUB_ENV
+    - name: Wait for slurmctld
+      run: for i in {0..29}; do [ "$(docker exec $cid sinfo --noheader --nodes=localhost --format=%t --responding --states=IDLE)" == "idle" ] && break || { echo "waiting for slurmctld..."; sleep 1; }; done; echo slurmctld_attempt=$i >> $GITHUB_ENV
+    - name: Node info
+      run: docker exec $cid scontrol show node localhost
+    - name: Partition info
+      run: docker exec $cid scontrol show partition debug
+    - name: Log failure
+      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; exit 1; fi
+    - name: Run tests
+      run: docker exec --workdir $(pwd) $cid make check || { echo "[test-suite.log]"; cat test/test-suite.log; echo "[functional-basic.log]"; cat test/functional-basic.log; exit 1; }
