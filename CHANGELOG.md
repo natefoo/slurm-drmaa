@@ -1,6 +1,17 @@
 Changelog
 =========
 
+1.1.2 (2021-01-27)
+------------------
+
+### New Features and Enhancements
+
+- Slurm 20.11 compatibility ([PR #47][pr47]; thanks @sandynomad, @holtgrewe, @aroudgar, @pawsey-kbuckley)
+- Tests moved to GitHub Actions ([PR #48][pr48])
+
+[pr47]: https://github.com/natefoo/slurm-drmaa/pull/47
+[pr48]: https://github.com/natefoo/slurm-drmaa/pull/48
+
 1.1.1 (2020-03-31)
 ------------------
 
