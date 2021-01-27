@@ -31,3 +31,10 @@ readme.out
 readme.pdf
 readme.aux
 readme.log
+*.swp
+*.la
+*.lo
+*.o
+*.log
+*.trs
+test/slurm_ping
