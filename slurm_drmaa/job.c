@@ -194,6 +194,7 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 
 			if (_slurm_errno == ESLURM_INVALID_JOB_ID) {
 				self->on_missing(self);
+				return NULL;
 			} else if (_slurm_errno == SLURM_PROTOCOL_SOCKET_IMPL_TIMEOUT ||
 				   _slurm_errno == SLURMCTLD_COMMUNICATIONS_CONNECTION_ERROR) {
 				fsd_exc_raise_fmt(FSD_ERRNO_DRM_COMMUNICATION_FAILURE, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(_slurm_errno), self->job_id);
