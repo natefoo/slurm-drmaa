@@ -64,10 +64,6 @@ cd ..
 eval `grep ^PACKAGE_VERSION= configure`
 PACKAGE_RELEASE=`echo ${PACKAGE_VERSION#*-} | sed -e 's/[.-]/_/g'`
 sed -i -e "s/^\(Version:\s*\).*$/\1${PACKAGE_VERSION%%-*}/" slurm-drmaa.spec
-if [ "${PACKAGE_VERSION}" != "${PACKAGE_RELEASE}" ]; then
-    # no dash in $PACKAGE_VERSION so this is not a dev/pre release
-    sed -i -e "s/^\(Release:\s*\).*/\11.${PACKAGE_RELEASE}%{?dist}/" slurm-drmaa.spec
-fi
 
 make dist
 SLURM_CONF=/dev/null DISTCHECK_CONFIGURE_FLAGS="CFLAGS='-I../../../../drmaa_utils -I../../..'" make distcheck
