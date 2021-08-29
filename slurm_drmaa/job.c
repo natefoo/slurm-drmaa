@@ -113,7 +113,9 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 				}
 				break;
 			case DRMAA_CONTROL_TERMINATE:
-#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(21,8,0)
+				if(slurm_kill_job2(self->job_id, SIGKILL, 0, NULL) == -1) {
+#elif SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
 				if(slurm_kill_job2(self->job_id, SIGKILL, 0) == -1) {
 #else
 				if(slurm_kill_job(fsd_atoi(self->job_id), SIGKILL, 0) == -1) {
