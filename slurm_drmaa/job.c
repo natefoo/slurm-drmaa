@@ -456,43 +456,45 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 		self->state = DRMAA_PS_FAILED;  /* assume failed if no job was found */
 		self->exit_status = -1;
 
-		fsd_log_info(( "Job %s has status %d, looking into accounting infos", self->job_id, self->state ));
+		if( getenv("SLURM_DRMAA_USE_SLURMDBD") ) { /* lookup job via slurmdbd if defined */
+			fsd_log_info(( "Job %s has status %d, looking into accounting infos", self->job_id, self->state ));
 
-		job_cond = calloc(1, sizeof(slurmdb_job_cond_t));
+			job_cond = calloc(1, sizeof(slurmdb_job_cond_t));
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(19,5,0)
-		job_cond->db_flags = SLURMDB_JOB_FLAG_NOTSET;
+			job_cond->db_flags = SLURMDB_JOB_FLAG_NOTSET;
 #endif
-		job_cond->flags |= JOBCOND_FLAG_NO_TRUNC;
-		job_cond->step_list = slurm_list_create(slurm_destroy_selected_step);
+			job_cond->flags |= JOBCOND_FLAG_NO_TRUNC;
+			job_cond->step_list = slurm_list_create(slurm_destroy_selected_step);
 
-		slurm_addto_step_list(job_cond->step_list, self->job_id);
-		job_cond->usage_end = time(NULL);
-		acct_db_conn = slurmdb_connection_get(NULL);
-		jobs = slurmdb_jobs_get(acct_db_conn, job_cond);
-		slurmdb_connection_close(&acct_db_conn);
-		slurm_list_destroy(job_cond->step_list);
-		free(job_cond);
+			slurm_addto_step_list(job_cond->step_list, self->job_id);
+			job_cond->usage_end = time(NULL);
+			acct_db_conn = slurmdb_connection_get(NULL);
+			jobs = slurmdb_jobs_get(acct_db_conn, job_cond);
+			slurmdb_connection_close(&acct_db_conn);
+			slurm_list_destroy(job_cond->step_list);
+			free(job_cond);
 
-		if (jobs) {
-			itr = slurm_list_iterator_create(jobs);
+			if (jobs) {
+				itr = slurm_list_iterator_create(jobs);
 
-			job = slurm_list_next(itr);
-			if (!job) {
-				fsd_log_info(( "Job not found in accounting." ));
-			} else {
-				do {
-					fsd_log_info(( "Job found in accounting with exit code %d", job->exitcode ));
-					self->exit_status = job->exitcode;
-					if (self->exit_status == 0)
-						self->state = DRMAA_PS_DONE;
-					else
-						self->state = DRMAA_PS_FAILED;
+				job = slurm_list_next(itr);
+				if (!job) {
+					fsd_log_info(( "Job not found in accounting." ));
+				} else {
+					do {
+						fsd_log_info(( "Job found in accounting with exit code %d", job->exitcode ));
+						self->exit_status = job->exitcode;
+						if (self->exit_status == 0)
+							self->state = DRMAA_PS_DONE;
+						else
+							self->state = DRMAA_PS_FAILED;
 
-					break;
-				} while ((job = slurm_list_next(itr)));
+						break;
+					} while ((job = slurm_list_next(itr)));
+				}
+
+				slurm_list_iterator_destroy(itr);
 			}
-
-			slurm_list_iterator_destroy(itr);
 		}
 	}
 
