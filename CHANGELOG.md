@@ -9,7 +9,12 @@ HEAD (unreleased)
 - Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) when `SLURM_DRMAA_USE_SLURMDBD` is set. ([PR #39][pr39], [PR #60][pr60]; thanks @holtgrewe)
 - Use SlurmDBD when running tests, replace Debian Buster with Bullseye ([pr59][pr59])
 
+### Bug Fixes
+
+- Array jobs: Don't segfault if parent job doesn't exist ([PR #51][pr51]; thanks @benmwebb)
+
 [pr39]: https://github.com/natefoo/slurm-drmaa/pull/39
+[pr51]: https://github.com/natefoo/slurm-drmaa/pull/51
 [pr59]: https://github.com/natefoo/slurm-drmaa/pull/59
 [pr60]: https://github.com/natefoo/slurm-drmaa/pull/60
 
