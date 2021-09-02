@@ -16,6 +16,7 @@ case $ID in
         /usr/bin/mysqld_safe --basedir=/usr &
         #/usr/libexec/mariadb-wait-ready $!
         sock=/var/lib/mysql/mysql.sock
+        mkdir -p /etc/slurm
         ;;
 esac
 
@@ -31,6 +32,9 @@ echo "starting slurm daemons..."
 set -x
 munged --force
 #slurmdbd -L /ci/slurmdbd.log
+cp -p /ci/slurmdbd.conf /ci/slurm.conf /etc/slurm
+chmod 0600 /etc/slurm/slurmdbd.conf
+chown slurm:slurm /etc/slurm/slurmdbd.conf
 slurmdbd
 { set +x; }  2>/dev/null
 while [ -z "`sacctmgr -no list stats`" ]; do echo "waiting for slurmdbd responsiveness..."; sleep 1; done

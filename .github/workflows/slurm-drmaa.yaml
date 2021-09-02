@@ -21,7 +21,7 @@ jobs:
           docker_image: centos:7
           slurm_version: 20.11
         - os: ubuntu-latest
-          docker_image: debian:buster
+          docker_image: debian:bullseye
           slurm_version: apt
     env:
       DOCKER_IMAGE: ${{ matrix.docker_image }}
