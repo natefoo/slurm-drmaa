@@ -12,9 +12,11 @@ HEAD (unreleased)
 ### Bug Fixes
 
 - Array jobs: Don't segfault if parent job doesn't exist ([PR #51][pr51]; thanks @benmwebb)
+- Prototype of `slurm_kill_job2()` was changed in Slurm 21.08 ([PR #58][pr58]; thanks @sandynomad)
 
 [pr39]: https://github.com/natefoo/slurm-drmaa/pull/39
 [pr51]: https://github.com/natefoo/slurm-drmaa/pull/51
+[pr58]: https://github.com/natefoo/slurm-drmaa/pull/58
 [pr59]: https://github.com/natefoo/slurm-drmaa/pull/59
 [pr60]: https://github.com/natefoo/slurm-drmaa/pull/60
 
