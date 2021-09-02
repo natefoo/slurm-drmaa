@@ -16,6 +16,11 @@ function slurm_available() {
     [ -f _slurm_available ]
 }
 
+function slurm_config_value() {
+    command -v scontrol >/dev/null || return 1
+    scontrol show config | awk -F= "\$1 ~ /^$1 *$/ {print \$2}" | xargs
+}
+
 function _slurm_test_prefix() {
     local base dir
     base=$(basename "$BATS_TEST_FILENAME" .bats)
@@ -39,4 +44,10 @@ function drmaa_run() {
     rm -f "$prefix".std{out,err}
     DRMAA_LIBRARY_PATH=../slurm_drmaa/.libs/libdrmaa.so run \
         ../drmaa_utils/drmaa_utils/drmaa-run "${opts[@]}" "'${prefix}.sh'" </dev/null
+}
+
+function drmaa_job_ps() {
+    local jobid="$1"
+    DRMAA_LIBRARY_PATH=../slurm_drmaa/.libs/libdrmaa.so run \
+        ../drmaa_utils/drmaa_utils/drmaa-job-ps "$jobid"
 }

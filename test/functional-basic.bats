@@ -56,3 +56,33 @@ load helper_slurm
     [ "$status" -eq 0 ]
     [ "$output" -eq 5 ]
 }
+
+@test "verify that status is lost after MinJobAge without \$SLURM_DRMAA_USE_SLURMDBD" {
+    slurm_available || skip "Slurm unreachable"
+    slurm_config_value "MinJobAge" || skip "Cannot get config value MinJobAge"
+    local min_job_age=${output/ sec/}
+    drmaa_run 'echo "$SLURM_JOB_ID"'
+    [ "$status" -eq 0 ]
+    local job_id="$output"
+    drmaa_job_ps "$job_id"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *done ]]
+    sleep $((min_job_age + 10))
+    drmaa_job_ps "$job_id"
+    [[ "$output" == *failed ]]
+}
+
+@test "verify that status is NOT lost after MinJobAge with \$SLURM_DRMAA_USE_SLURMDBD" {
+    slurm_available || skip "Slurm unreachable"
+    slurm_config_value "MinJobAge" || skip "Cannot get config value MinJobAge"
+    local min_job_age=${output/ sec/}
+    drmaa_run 'echo "$SLURM_JOB_ID"'
+    [ "$status" -eq 0 ]
+    local job_id="$output"
+    SLURM_DRMAA_USE_SLURMDBD=1 drmaa_job_ps "$job_id"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *done ]]
+    sleep $((min_job_age + 10))
+    SLURM_DRMAA_USE_SLURMDBD=1 drmaa_job_ps "$job_id"
+    [[ "$output" == *done ]]
+}
