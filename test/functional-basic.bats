@@ -56,3 +56,34 @@ load helper_slurm
     [ "$status" -eq 0 ]
     [ "$output" -eq 5 ]
 }
+
+@test "verify that status is lost after MinJobAge without \$SLURM_DRMAA_USE_SLURMDBD" {
+    slurm_available || skip "Slurm unreachable"
+    local min_job_age=$(slurm_config_value "MinJobAge")
+    min_job_age=${min_job_age/ sec/}
+    drmaa_run 'echo "$SLURM_JOB_ID"'
+    [ "$status" -eq 0 ]
+    local job_id="$output"
+    drmaa_job_ps "$job_id"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *done ]]
+    sleep $((min_job_age + 10))
+    drmaa_job_ps "$job_id"
+    [[ "$output" == *failed ]]
+}
+
+@test "verify that status is NOT lost after MinJobAge with \$SLURM_DRMAA_USE_SLURMDBD" {
+    slurm_available || skip "Slurm unreachable"
+    local min_job_age=$(slurm_config_value "MinJobAge")
+    min_job_age=${min_job_age/ sec/}
+    [ $(slurm_version_major) -ge 1905 ] || skip "Minimum feature version Slurm 19.05: $output"
+    drmaa_run 'echo "$SLURM_JOB_ID"'
+    [ "$status" -eq 0 ]
+    local job_id="$output"
+    SLURM_DRMAA_USE_SLURMDBD=1 drmaa_job_ps "$job_id"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *done ]]
+    sleep $((min_job_age + 10))
+    SLURM_DRMAA_USE_SLURMDBD=1 drmaa_job_ps "$job_id"
+    [[ "$output" == *done ]]
+}

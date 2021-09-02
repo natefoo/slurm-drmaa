@@ -6,6 +6,7 @@ jobs:
     name: Functional Tests
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
         - os: ubuntu-latest
@@ -21,7 +22,7 @@ jobs:
           docker_image: centos:7
           slurm_version: 20.11
         - os: ubuntu-latest
-          docker_image: debian:buster
+          docker_image: debian:bullseye
           slurm_version: apt
     env:
       DOCKER_IMAGE: ${{ matrix.docker_image }}
@@ -57,6 +58,6 @@ jobs:
     - name: Partition info
       run: docker exec $cid scontrol show partition debug
     - name: Log failure
-      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; exit 1; fi
+      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmdbd.log]"; cat .ci/slurmdbd.log; echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; exit 1; fi
     - name: Run tests
       run: docker exec --workdir $(pwd) $cid make check || { echo "[test-suite.log]"; cat test/test-suite.log; echo "[functional-basic.log]"; cat test/functional-basic.log; exit 1; }
