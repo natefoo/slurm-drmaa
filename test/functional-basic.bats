@@ -59,8 +59,8 @@ load helper_slurm
 
 @test "verify that status is lost after MinJobAge without \$SLURM_DRMAA_USE_SLURMDBD" {
     slurm_available || skip "Slurm unreachable"
-    slurm_config_value "MinJobAge" || skip "Cannot get config value MinJobAge"
-    local min_job_age=${output/ sec/}
+    local min_job_age=$(slurm_config_value "MinJobAge")
+    min_job_age=${min_job_age/ sec/}
     drmaa_run 'echo "$SLURM_JOB_ID"'
     [ "$status" -eq 0 ]
     local job_id="$output"
@@ -74,8 +74,9 @@ load helper_slurm
 
 @test "verify that status is NOT lost after MinJobAge with \$SLURM_DRMAA_USE_SLURMDBD" {
     slurm_available || skip "Slurm unreachable"
-    slurm_config_value "MinJobAge" || skip "Cannot get config value MinJobAge"
-    local min_job_age=${output/ sec/}
+    local min_job_age=$(slurm_config_value "MinJobAge")
+    min_job_age=${min_job_age/ sec/}
+    [ $(slurm_version_major) -ge 1905 ] || skip "Minimum feature version Slurm 19.05: $output"
     drmaa_run 'echo "$SLURM_JOB_ID"'
     [ "$status" -eq 0 ]
     local job_id="$output"

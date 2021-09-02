@@ -17,8 +17,13 @@ function slurm_available() {
 }
 
 function slurm_config_value() {
-    command -v scontrol >/dev/null || return 1
+    command -v scontrol >/dev/null || skip "Cannot get config value $1: scontrol not found"
     scontrol show config | awk -F= "\$1 ~ /^$1 *$/ {print \$2}" | xargs
+}
+
+function slurm_version_major() {
+    command -v scontrol >/dev/null || skip "Cannot get Slurm version: scontrol not found"
+    scontrol version | awk '{print $NF}' | awk -F. '{print $1 $2}'
 }
 
 function _slurm_test_prefix() {
