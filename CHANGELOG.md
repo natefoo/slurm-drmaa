@@ -6,8 +6,9 @@ HEAD (unreleased)
 
 ### New Features and Enhancements
 
-- Make compatible with Slurm 20.11 (@holtgrewe).
-- Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) when `SLURM_DRMAA_USE_SLURMDBD` is set. (@holtgrewe)
+- Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) when `SLURM_DRMAA_USE_SLURMDBD` is set. ([PR #39][pr39]; thanks @holtgrewe)
+
+[pr39]: https://github.com/natefoo/slurm-drmaa/pull/39
 
 1.1.2 (2021-01-27)
 ------------------
