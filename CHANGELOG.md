@@ -6,9 +6,12 @@ HEAD (unreleased)
 
 ### New Features and Enhancements
 
-- Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) when `SLURM_DRMAA_USE_SLURMDBD` is set. ([PR #39][pr39]; thanks @holtgrewe)
+- Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) when `SLURM_DRMAA_USE_SLURMDBD` is set. ([PR #39][pr39], [PR #60][pr60]; thanks @holtgrewe)
+- Use SlurmDBD when running tests, replace Debian Buster with Bullseye ([pr59][pr59])
 
 [pr39]: https://github.com/natefoo/slurm-drmaa/pull/39
+[pr59]: https://github.com/natefoo/slurm-drmaa/pull/59
+[pr60]: https://github.com/natefoo/slurm-drmaa/pull/60
 
 1.1.2 (2021-01-27)
 ------------------
