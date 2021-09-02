@@ -463,7 +463,7 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 			job_cond->db_flags = SLURMDB_JOB_FLAG_NOTSET;
 #endif
 			job_cond->flags |= JOBCOND_FLAG_NO_TRUNC;
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(19,5,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(20,11,0)
 			job_cond->step_list = slurm_list_create(slurm_destroy_selected_step);
 #else
 			job_cond->step_list = slurm_list_create(slurmdb_destroy_selected_step);
