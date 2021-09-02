@@ -436,7 +436,6 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 	slurmdb_job_rec_t *job = NULL;
 	List jobs;
 	ListIterator itr = NULL;
-	char *start;
 	void *acct_db_conn = NULL;
 
 	fsd_log_enter(( "({job_id=%s})", self->job_id ));
@@ -459,12 +458,16 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 		if( getenv("SLURM_DRMAA_USE_SLURMDBD") ) { /* lookup job via slurmdbd if defined */
 			fsd_log_info(( "Job %s has status %d, looking into accounting infos", self->job_id, self->state ));
 
-			job_cond = calloc(1, sizeof(slurmdb_job_cond_t));
+			fsd_calloc(job_cond, 1, slurmdb_job_cond_t);
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(19,5,0)
 			job_cond->db_flags = SLURMDB_JOB_FLAG_NOTSET;
 #endif
 			job_cond->flags |= JOBCOND_FLAG_NO_TRUNC;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(19,5,0)
 			job_cond->step_list = slurm_list_create(slurm_destroy_selected_step);
+#else
+			job_cond->step_list = slurm_list_create(slurmdb_destroy_selected_step);
+#endif
 
 			slurm_addto_step_list(job_cond->step_list, self->job_id);
 			job_cond->usage_end = time(NULL);
@@ -472,7 +475,7 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 			jobs = slurmdb_jobs_get(acct_db_conn, job_cond);
 			slurmdb_connection_close(&acct_db_conn);
 			slurm_list_destroy(job_cond->step_list);
-			free(job_cond);
+			fsd_free(job_cond);
 
 			if (jobs) {
 				itr = slurm_list_iterator_create(jobs);
