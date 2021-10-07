@@ -1,6 +1,8 @@
+%global slurm_version  %(printf "%s" $(rpm -q slurm-devel --qf "%{VERSION}" | cut -d. -f-2) 2>/dev/null)
+
 Name:		slurm-drmaa
 Version:	dev
-Release:	1%{?dist}
+Release:	%{slurm_version}%{?dist}
 
 Summary:	DRMAA for Slurm
 Group:		Development/Libraries
