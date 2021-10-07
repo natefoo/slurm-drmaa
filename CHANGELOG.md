@@ -1,17 +1,38 @@
 Changelog
 =========
 
-HEAD (unreleased)
------------------
+1.1.3 (2021-10-07)
+------------------
 
 ### New Features and Enhancements
 
 - Retrieve job status from accounting (slurmdb) if already complete (instead of only looking at slurmd) when `SLURM_DRMAA_USE_SLURMDBD` is set. ([PR #39][pr39], [PR #60][pr60]; thanks @holtgrewe)
-- Use SlurmDBD when running tests, replace Debian Buster with Bullseye ([pr59][pr59])
+- Use SlurmDBD when running tests, replace Debian Buster with Bullseye, test against Slurm 21.08 ([PR #59][pr59], [PR #61][pr61])
+- Slurm 21.08 support: Prototype of `slurm_kill_job2()` was changed in Slurm 21.08 ([PR #58][pr58]; thanks @sandynomad)
+- Add `drmaa-job-ps` command line utility for testing ([drmaa-utils PR #3][utils-pr3])
+- RPM release field now contains the version of Slurm installed at build time, when building with the included RPM spec file ([PR #52][pr52]; thanks @kcgthb)
+
+### Bug Fixes
+
+- Array jobs: Don't segfault if parent job doesn't exist ([PR #51][pr51]; thanks @benmwebb)
+- Fixes for configuration test order and programs, fix runtime linker path on EL ([Issue #44][issue44], [PR #62][pr62]; thanks @reid-wagner)
+- Don't segfault when running `drmaa-*` command line utilities without arguments ([Issue #64][issue64], [drmaa-utils PR #5][utils-pr5]; thanks @richc-at-graphcore)
+- Fix path to missing-dev-prog.sh for ragel ([drmaa-utils Issue #2][utils-issue2], [drmaa-utils PR #6][utils-pr6]; thanks @sandynomad)
 
 [pr39]: https://github.com/natefoo/slurm-drmaa/pull/39
+[pr51]: https://github.com/natefoo/slurm-drmaa/pull/51
+[pr52]: https://github.com/natefoo/slurm-drmaa/pull/52
+[pr58]: https://github.com/natefoo/slurm-drmaa/pull/58
 [pr59]: https://github.com/natefoo/slurm-drmaa/pull/59
 [pr60]: https://github.com/natefoo/slurm-drmaa/pull/60
+[pr61]: https://github.com/natefoo/slurm-drmaa/pull/61
+[pr62]: https://github.com/natefoo/slurm-drmaa/pull/62
+[issue44]: https://github.com/natefoo/slurm-drmaa/issues/44
+[issue64]: https://github.com/natefoo/slurm-drmaa/issues/64
+[utils-pr3]: https://github.com/natefoo/drmaa-utils/pull/3
+[utils-pr5]: https://github.com/natefoo/drmaa-utils/pull/5
+[utils-pr6]: https://github.com/natefoo/drmaa-utils/pull/6
+[utils-issue2]: https://github.com/natefoo/drmaa-utils/issues/2
 
 1.1.2 (2021-01-27)
 ------------------
