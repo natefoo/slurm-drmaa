@@ -18,7 +18,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # slurm headers/libs are required to generate the build artifacts
 RUN apt-get -qqy update && apt-get -y install --no-install-recommends build-essential gperf ragel m4 automake autoconf \
-    libtool libslurm-dev libslurmdb-dev slurm-wlm git ca-certificates bison
+    libtool libslurm-dev slurm-wlm git ca-certificates bison
 RUN apt-get -y clean
 
 RUN git clone https://github.com/bats-core/bats-core.git/ /bats
