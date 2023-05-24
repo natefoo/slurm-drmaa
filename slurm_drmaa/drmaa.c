@@ -30,18 +30,27 @@
 
 #include <slurm_drmaa/session.h>
 #include <slurm/slurm.h>
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(23,0,0)
+#include <slurm_drmaa/util.h>
+#endif
 
 static char slurmdrmaa_version[50] = "";
 
 static fsd_drmaa_session_t *
 slurmdrmaa_new_session( fsd_drmaa_singletone_t *self, const char *contact )
 {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(23,0,0)
+	slurmdrmaa_init();
+#endif
 	return slurmdrmaa_session_new( contact );
 }
 
 static fsd_template_t *
 slurmdrmaa_new_job_template( fsd_drmaa_singletone_t *self )
 {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(23,0,0)
+	slurmdrmaa_init();
+#endif
 	return drmaa_template_new();
 }
 
@@ -61,6 +70,9 @@ slurmdrmaa_get_version( fsd_drmaa_singletone_t *self,
 static const char *
 slurmdrmaa_get_DRM_system( fsd_drmaa_singletone_t *self )
 {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(23,0,0)
+	slurmdrmaa_init();
+#endif
 	if(slurmdrmaa_version[0] == '\0') /*no locks as drmaa_get_drm_system is usually called only once */
 	{
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(20,11,0)
