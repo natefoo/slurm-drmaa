@@ -728,10 +728,10 @@ slurmdrmaa_set_cluster(const char * value)
 static int slurmdrmaa_has_inited = 0;
 
 void
-slurmdrmaa_init( void )
+slurmdrmaa_init(void)
 {
-	if ( slurmdrmaa_has_inited != 1 ) {
-		slurm_init( NULL );
+	if (slurmdrmaa_has_inited != 1) {
+		slurm_init(NULL);
 		slurmdrmaa_has_inited = 1;
 	}
 }
