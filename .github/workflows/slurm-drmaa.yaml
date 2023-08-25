@@ -25,6 +25,12 @@ jobs:
           docker_image: centos:7
           slurm_version: 21.08
         - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 22.05
+        - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 23.02
+        - os: ubuntu-latest
           docker_image: debian:bullseye
           slurm_version: apt
     env:
