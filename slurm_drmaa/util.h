@@ -37,5 +37,8 @@ void slurmdrmaa_parse_native(job_desc_msg_t *job_desc, const char * value);
 char * slurmdrmaa_set_job_id(job_id_spec_t *job_id_spec);
 char * slurmdrmaa_unset_job_id(job_id_spec_t *job_id_spec);
 void slurmdrmaa_set_cluster(const char * value);
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(23,0,0)
+void slurmdrmaa__init(void);
+#endif
 
 #endif /* __SLURM_DRMAA__UTIL_H */
