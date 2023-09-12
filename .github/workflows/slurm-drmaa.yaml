@@ -59,7 +59,7 @@ jobs:
     - name: Run make install
       run: docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE make install
     - name: Run Slurm
-      run: echo cid=$(docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --detach ci/$DOCKER_IMAGE /runslurm.sh) >> $GITHUB_ENV
+      run: echo cid=$(docker run -e SLURM_VERSION --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --detach ci/$DOCKER_IMAGE /runslurm.sh) >> $GITHUB_ENV
     - name: Wait for slurmctld
       run: for i in {0..29}; do [ "$(docker exec $cid sinfo --noheader --nodes=localhost --format=%t --responding --states=IDLE)" == "idle" ] && break || { echo "waiting for slurmctld..."; sleep 1; }; done; echo slurmctld_attempt=$i >> $GITHUB_ENV
     - name: Node info
