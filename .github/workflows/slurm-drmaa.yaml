@@ -25,6 +25,12 @@ jobs:
           docker_image: centos:7
           slurm_version: 21.08
         - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 22.05
+        - os: ubuntu-latest
+          docker_image: centos:7
+          slurm_version: 23.02
+        - os: ubuntu-latest
           docker_image: debian:bullseye
           slurm_version: apt
     env:
@@ -53,7 +59,7 @@ jobs:
     - name: Run make install
       run: docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --workdir $(pwd) --user $(id -u):$(id -g) ci/$DOCKER_IMAGE make install
     - name: Run Slurm
-      run: echo cid=$(docker run --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --detach ci/$DOCKER_IMAGE /runslurm.sh) >> $GITHUB_ENV
+      run: echo cid=$(docker run -e SLURM_VERSION --volume $(pwd):$(pwd) --volume $(pwd)/.ci:/ci --detach ci/$DOCKER_IMAGE /runslurm.sh) >> $GITHUB_ENV
     - name: Wait for slurmctld
       run: for i in {0..29}; do [ "$(docker exec $cid sinfo --noheader --nodes=localhost --format=%t --responding --states=IDLE)" == "idle" ] && break || { echo "waiting for slurmctld..."; sleep 1; }; done; echo slurmctld_attempt=$i >> $GITHUB_ENV
     - name: Node info

@@ -35,6 +35,8 @@ munged --force
 cp -p /ci/slurmdbd.conf /ci/slurm.conf /etc/slurm
 chmod 0600 /etc/slurm/slurmdbd.conf
 chown slurm:slurm /etc/slurm/slurmdbd.conf
+# disable cgroupv2 usage in slurmd in newer Slurms
+[ ${SLURM_VERSION%.*} -ge 22 ] && echo 'CgroupPlugin=cgroup/v1' > /etc/slurm/cgroup.conf
 slurmdbd
 { set +x; }  2>/dev/null
 while [ -z "`sacctmgr -no list stats`" ]; do echo "waiting for slurmdbd responsiveness..."; sleep 1; done
