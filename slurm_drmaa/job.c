@@ -658,6 +658,7 @@ slurmdrmaa_job_create(
 			for( i = vector, j = 2;  *i;  i++, j++ )
 			{
 				char *arg_expanded = expand->expand( expand, fsd_strdup(*i), FSD_DRMAA_PH_HD | FSD_DRMAA_PH_WD );
+				char *quoted_arg_expanded = fsd_replace(arg_expanded, "\'", "\'\"\'\"\'");
 				
 				temp_script_old = fsd_strdup(temp_script);
 				
@@ -665,7 +666,7 @@ slurmdrmaa_job_create(
 					fsd_free(temp_script);
 				}
 				/* add too script */
-				temp_script = fsd_asprintf("%s '%s'", temp_script_old, arg_expanded);
+				temp_script = fsd_asprintf("%s '%s'", temp_script_old, quoted_arg_expanded);
 				fsd_free(temp_script_old);
 				fsd_free(arg_expanded);
 			}
