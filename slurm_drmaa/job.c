@@ -379,15 +379,22 @@ slurmdrmaa_job_update_status( fsd_job_t *self )
 					fsd_log_debug(("interpreting as DRMAA_PS_FAILED (aborted)"));
 					self->state = DRMAA_PS_FAILED;
 					self->exit_status = -1;
+                    // fall through
 				case JOB_FAILED:
+                    // fall through
 				case JOB_TIMEOUT:
+                    // fall through
 				case JOB_NODE_FAIL:
+                    // fall through
 				case JOB_PREEMPTED:
+                    // fall through
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(14,3,0)
 				case JOB_BOOT_FAIL:
+                    // fall through
 #endif
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(16,5,0)
 				case JOB_DEADLINE:
+                    // fall through
 #endif
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(17,2,0)
 				case JOB_OOM:
@@ -438,7 +445,12 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 	slurmdb_job_cond_t *job_cond = NULL;
 	slurmdb_job_rec_t *job = NULL;
 	List jobs;
+
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,5,0)
+	list_itr_t *itr = NULL;
+#else
 	ListIterator itr = NULL;
+#endif
 	void *acct_db_conn = NULL;
 
 	fsd_log_enter(( "({job_id=%s})", self->job_id ));
@@ -994,7 +1006,8 @@ _slurmdrmaa_set_prio_process_env(char **envp, unsigned int envpos)
 
 	if ((retval = getpriority(PRIO_PROCESS, 0)) == -1)  {
 		if (errno) {
-			fsd_log_error(("unable to set SLURM_PRIO_PROCESS in job environment: getpriority(PRIO_PROCESS): %m"));
+			fsd_log_error(("unable to set SLURM_PRIO_PROCESS in job environment: getpriority(PRIO_PROCESS): %s",
+                        strerror( errno ) ));
 			return envpos;
 		}
 	}
@@ -1013,12 +1026,14 @@ _slurmdrmaa_set_submit_dir_env(char **envp, unsigned int envpos)
 	char buf[MAXPATHLEN + 1], host[256];
 
 	if ((getcwd(buf, MAXPATHLEN)) == NULL)
-		fsd_log_error(("unable to set SLURM_SUBMIT_DIR in job environment: getcwd failed: %m"));
+		fsd_log_error(("unable to set SLURM_SUBMIT_DIR in job environment: getcwd failed: %s",
+                    strerror( errno ) ));
 	else
 		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_DIR", buf);
 
 	if ((gethostname(host, sizeof(host))))
-		fsd_log_error(("unable to set SLURM_SUBMIT_HOST in environment: gethostname_short failed: %m"));
+		fsd_log_error(("unable to set SLURM_SUBMIT_HOST in environment: gethostname_short failed: %s",
+                    strerror( errno ) ));
 	else
 		envpos = _slurmdrmaa_add_envvar(envp, envpos, "SLURM_SUBMIT_HOST", host);
 
