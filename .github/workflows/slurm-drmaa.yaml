@@ -25,6 +25,9 @@ jobs:
           docker_image: rockylinux:8
           slurm_version: 23.11
         - os: ubuntu-latest
+          docker_image: rockylinux:8
+          slurm_version: 24.05
+        - os: ubuntu-latest
           docker_image: debian:bookworm
           slurm_version: 22.05
     env:
