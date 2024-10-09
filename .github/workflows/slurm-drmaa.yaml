@@ -22,7 +22,10 @@ jobs:
           docker_image: rockylinux:8
           slurm_version: 23.02
         - os: ubuntu-latest
-          docker_image: debian:bullseye
+          docker_image: rockylinux:8
+          slurm_version: 23.11
+        - os: ubuntu-latest
+          docker_image: debian:bookworm
           slurm_version: apt
     env:
       DOCKER_IMAGE: ${{ matrix.docker_image }}
