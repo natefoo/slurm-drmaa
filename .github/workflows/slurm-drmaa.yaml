@@ -61,6 +61,6 @@ jobs:
     - name: Partition info
       run: docker exec $cid scontrol show partition debug
     - name: Log failure
-      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmdbd.log]"; cat .ci/slurmdbd.log; echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; exit 1; fi
+      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmdbd.log]"; cat .ci/slurmdbd.log; echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; echo "[docker logs]"; docker logs $cid; exit 1; fi
     - name: Run tests
       run: docker exec --workdir $(pwd) $cid make check || { echo "[test-suite.log]"; cat test/test-suite.log; echo "[functional-basic.log]"; cat test/functional-basic.log; exit 1; }
