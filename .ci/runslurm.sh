@@ -12,7 +12,7 @@ case $ID in
         sock=/var/run/mysqld/mysqld.sock
         ;;
     rocky)
-        /usr/libexec/mariadb-prepare-db-dir mariadb.service
+        /usr/libexec/mysql-prepare-db-dir mariadb.service
         /usr/bin/mysqld_safe --basedir=/usr &
         #/usr/libexec/mariadb-wait-ready $!
         sock=/var/lib/mysql/mysql.sock
