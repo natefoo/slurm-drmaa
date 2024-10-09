@@ -11,7 +11,7 @@ case $ID in
         su - mysql -s /bin/sh -c /usr/sbin/mysqld &
         sock=/var/run/mysqld/mysqld.sock
         ;;
-    centos)
+    rocky)
         /usr/libexec/mariadb-prepare-db-dir mariadb.service
         /usr/bin/mysqld_safe --basedir=/usr &
         #/usr/libexec/mariadb-wait-ready $!
