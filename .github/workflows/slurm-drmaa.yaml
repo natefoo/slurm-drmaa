@@ -10,29 +10,23 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest
-          docker_image: centos:7
-          slurm_version: 18.08
-        - os: ubuntu-latest
-          docker_image: centos:7
-          slurm_version: 19.05
-        - os: ubuntu-latest
-          docker_image: centos:7
-          slurm_version: 20.02
-        - os: ubuntu-latest
-          docker_image: centos:7
+          docker_image: rockylinux:8
           slurm_version: 20.11
         - os: ubuntu-latest
-          docker_image: centos:7
+          docker_image: rockylinux:8
           slurm_version: 21.08
         - os: ubuntu-latest
-          docker_image: centos:7
+          docker_image: rockylinux:8
           slurm_version: 22.05
         - os: ubuntu-latest
-          docker_image: centos:7
+          docker_image: rockylinux:8
           slurm_version: 23.02
         - os: ubuntu-latest
-          docker_image: debian:bullseye
-          slurm_version: apt
+          docker_image: rockylinux:8
+          slurm_version: 23.11
+        - os: ubuntu-latest
+          docker_image: debian:bookworm
+          slurm_version: 22.05
     env:
       DOCKER_IMAGE: ${{ matrix.docker_image }}
       SLURM_VERSION: ${{ matrix.slurm_version }}
@@ -67,6 +61,6 @@ jobs:
     - name: Partition info
       run: docker exec $cid scontrol show partition debug
     - name: Log failure
-      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmdbd.log]"; cat .ci/slurmdbd.log; echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; exit 1; fi
+      run: if [ $slurmctld_attempt -eq 29 ]; then echo "[slurmdbd.log]"; cat .ci/slurmdbd.log; echo "[slurmctld.log]"; cat .ci/slurmctld.log; echo "[slurmd.log]"; cat .ci/slurmd.log; echo "[docker logs]"; docker logs $cid; exit 1; fi
     - name: Run tests
       run: docker exec --workdir $(pwd) $cid make check || { echo "[test-suite.log]"; cat test/test-suite.log; echo "[functional-basic.log]"; cat test/functional-basic.log; exit 1; }
