@@ -26,7 +26,7 @@ jobs:
           slurm_version: 23.11
         - os: ubuntu-latest
           docker_image: debian:bookworm
-          slurm_version: apt
+          slurm_version: 22.05
     env:
       DOCKER_IMAGE: ${{ matrix.docker_image }}
       SLURM_VERSION: ${{ matrix.slurm_version }}
