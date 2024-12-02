@@ -28,6 +28,8 @@
 #include <slurm_drmaa/slurm_missing.h>
 #include <slurm_drmaa/slurm_drmaa.h>
 
+#include <slurm/slurm_version.h>
+
 unsigned int
 slurmdrmaa_datetime_parse( const char *string )
 {
@@ -690,7 +692,11 @@ slurmdrmaa_unset_job_id(job_id_spec_t *job_id_spec)
 void
 slurmdrmaa_set_cluster(const char * value)
 {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+    list_t *cluster_list = NULL;
+#else
 	volatile List cluster_list = NULL;
+#endif
 
 	fsd_log_enter(( "({value=%s})", value));
 
