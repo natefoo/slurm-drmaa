@@ -690,7 +690,11 @@ slurmdrmaa_unset_job_id(job_id_spec_t *job_id_spec)
 void
 slurmdrmaa_set_cluster(const char * value)
 {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+    list_t *cluster_list = NULL;
+#else
 	volatile List cluster_list = NULL;
+#endif
 
 	fsd_log_enter(( "({value=%s})", value));
 
