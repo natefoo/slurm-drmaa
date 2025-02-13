@@ -76,13 +76,20 @@ slurmdrmaa_get_DRM_system( fsd_drmaa_singletone_t *self )
 	if(slurmdrmaa_version[0] == '\0') /*no locks as drmaa_get_drm_system is usually called only once */
 	{
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(20,11,0)
-		slurm_conf_t * conf_info_msg_ptr = NULL; 
+		slurm_conf_t * conf_info_msg_ptr = NULL;
 #else
-		slurm_ctl_conf_t * conf_info_msg_ptr = NULL; 
+		slurm_ctl_conf_t * conf_info_msg_ptr = NULL;
 #endif
-		if ( slurm_load_ctl_conf ((time_t) NULL, &conf_info_msg_ptr ) == -1 ) 
-		{ 
-			fsd_log_error(("slurm_load_ctl_conf error: %s",slurm_strerror(slurm_get_errno())));
+		int _serrno;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+		if ( (_serrno = slurm_load_ctl_conf ((time_t) NULL, &conf_info_msg_ptr )) != SLURM_SUCCESS )
+		{
+#else
+		if ( slurm_load_ctl_conf ((time_t) NULL, &conf_info_msg_ptr ) == -1 )
+		{
+			_serrno = slurm_get_errno();
+#endif
+			fsd_log_error(("slurm_load_ctl_conf error: %s",slurm_strerror(_serrno)));
 			fsd_snprintf(NULL, slurmdrmaa_version, sizeof(slurmdrmaa_version)-1,"SLURM");
 		}
 		else
@@ -192,7 +199,7 @@ slurmdrmaa_wcoredump(
 		)
 {
 	/**core_dumped = 0;*/
-	*core_dumped = ((stat)&0200); 
+	*core_dumped = ((stat)&0200);
 	return DRMAA_ERRNO_SUCCESS;
 }
 

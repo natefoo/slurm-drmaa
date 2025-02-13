@@ -107,7 +107,7 @@ slurmdrmaa_session_run_bulk(
 
 	/* zero out the struct, and set default vaules */
 	slurm_init_job_desc_msg( &job_desc );
-	
+
 	TRY
 	 {
 		unsigned i;
@@ -125,13 +125,18 @@ slurmdrmaa_session_run_bulk(
 
 		connection_lock = fsd_mutex_lock( &self->drm_connection_mutex );
 		slurmdrmaa_job_create_req( self, jt, (fsd_environ_t**)&env , &job_desc );
+		int _slurm_errno;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+		if (_slurm_errno = slurm_submit_batch_job(&job_desc,&submit_response)) {
+#else
 		if (slurm_submit_batch_job(&job_desc,&submit_response)) {
-			int _slurm_errno = slurm_get_errno();
+			_slurm_errno = slurm_get_errno();
+#endif
 			if (_slurm_errno == EAGAIN ||
 			    (_slurm_errno >= 5000 && _slurm_errno < 6000)) {
 				fsd_exc_raise_fmt(FSD_ERRNO_DRM_COMMUNICATION_FAILURE,"slurm_submit_batch_job error: %s", slurm_strerror(_slurm_errno));
 			} else if (_slurm_errno >= 2000 && _slurm_errno < 4000) {
-				fsd_exc_raise_fmt(FSD_ERRNO_DENIED_BY_DRM,"slurm_submit_batch_job error: %s", slurm_strerror(slurm_get_errno()));
+				fsd_exc_raise_fmt(FSD_ERRNO_DENIED_BY_DRM,"slurm_submit_batch_job error: %s", slurm_strerror(_slurm_errno));
 			} else {
 				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR,"slurm_submit_batch_job error (%d): %s", _slurm_errno, slurm_strerror(_slurm_errno));
 			}
@@ -145,7 +150,16 @@ slurmdrmaa_session_run_bulk(
 			fsd_log_debug(("job %u submitted on cluster %s", submit_response->job_id, working_cluster_rec->name));
 
 		if ( start != 0 || end != 0 || incr != 0 ) {
-			if ( SLURM_SUCCESS == slurm_load_job( &job_info, submit_response->job_id, 0) ) {
+			int _serrno;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+			if (( _serrno = slurm_load_job( &job_info, submit_response->job_id, 0)) != SLURM_SUCCESS) {
+#else
+			if ( SLURM_SUCCESS != slurm_load_job( &job_info, submit_response->job_id, 0) ) {
+				_serrno = slurm_get_errno();
+#endif
+				fsd_exc_raise_fmt( FSD_ERRNO_INTERNAL_ERROR,"slurm_load_job: %s",slurm_strerror(_serrno));
+			}
+			else {
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(14, 10, 0)
 				for (i = 0, v = start; i < n_jobs; i++, v += incr) {
 					job_ids[i] = fsd_asprintf("%d_%d", submit_response->job_id, v);
@@ -163,8 +177,6 @@ slurmdrmaa_session_run_bulk(
 					job->release( job );
 					job = NULL;
 				}
-			} else {
-				fsd_exc_raise_fmt( FSD_ERRNO_INTERNAL_ERROR,"slurm_load_job: %s",slurm_strerror(slurm_get_errno()));
 			}
 		} else {
 			if (!working_cluster_rec)
@@ -187,8 +199,8 @@ slurmdrmaa_session_run_bulk(
 	 }
 	FINALLY
 	 {
-		
-			
+
+
 		if( connection_lock )
 			fsd_mutex_unlock( &self->drm_connection_mutex );
 
@@ -204,7 +216,7 @@ slurmdrmaa_session_run_bulk(
 
 		if( fsd_exc_get() != NULL )
 			fsd_free_vector( job_ids );
-			
+
 		slurmdrmaa_free_job_desc(&job_desc);
 	 }
 	END_TRY
