@@ -70,15 +70,21 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 		job_id_spec.original = self->job_id;
 		self->job_id = slurmdrmaa_set_job_id(&job_id_spec);
 
+        int _serrno;
+
 		switch( action )
 		 {
 			case DRMAA_CONTROL_SUSPEND:
-#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
-				if(slurm_suspend2(self->job_id, NULL) == -1) {
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+				if(( _serrno = slurm_suspend2(self->job_id, NULL)) != SLURM_SUCCESS) {
+#elif SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
+				if( slurm_suspend2(self->job_id, NULL) == -1) {
+                    int _serrno = slurm_get_errno();
 #else
 				if(slurm_suspend(fsd_atoi(self->job_id)) == -1) {
+                    int _serrno = slurm_get_errno();
 #endif
-					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_suspend error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_suspend error: %s,job_id: %s", slurm_strerror( _serrno ), self->job_id);
 				}
 				slurm_self->user_suspended = true;
 				break;
@@ -89,17 +95,26 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 				job_desc.job_id = atoi(self->job_id);
 				job_desc.priority = 0;
 				job_desc.alloc_sid = 0;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+				if(( _serrno = slurm_update_job(&job_desc)) != SLURM_SUCCESS ) {
+#else
 				if(slurm_update_job(&job_desc) == -1) {
-					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_update_job error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+                    _serrno = slurm_get_errno();
+#endif
+					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_update_job error: %s,job_id: %s", slurm_strerror( _serrno ), self->job_id);
 				}
 				break;
 			case DRMAA_CONTROL_RESUME:
-#if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+				if(( _serrno = slurm_resume2(self->job_id, NULL)) != SLURM_SUCCESS ) {
+#elif SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
 				if(slurm_resume2(self->job_id, NULL) == -1) {
+                    _serrno = slurm_get_errno();
 #else
 				if(slurm_resume(fsd_atoi(self->job_id)) == -1) {
+                    _serrno = slurm_get_errno();
 #endif
-					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_resume error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_resume error: %s,job_id: %s", slurm_strerror( _serrno ), self->job_id);
 				}
 				slurm_self->user_suspended = false;
 				break;
@@ -108,19 +123,29 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 			  	slurm_init_job_desc_msg(&job_desc);
 				job_desc.priority = INFINITE;
 				job_desc.job_id = atoi(self->job_id);
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+				if((_serrno = slurm_update_job(&job_desc)) != SLURM_SUCCESS ) {
+#else
 				if(slurm_update_job(&job_desc) == -1) {
-					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_update_job error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+                    _serrno = slurm_get_errno();
+#endif
+					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_update_job error: %s,job_id: %s", slurm_strerror( _serrno ), self->job_id);
 				}
 				break;
 			case DRMAA_CONTROL_TERMINATE:
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(21,8,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+				if(( _serrno = slurm_kill_job2(self->job_id, SIGKILL, 0, NULL)) != SLURM_SUCCESS ) {
+#elif SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(21,8,0)
 				if(slurm_kill_job2(self->job_id, SIGKILL, 0, NULL) == -1) {
+                    _serrno = slurm_get_errno();
 #elif SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(14,10,0)
 				if(slurm_kill_job2(self->job_id, SIGKILL, 0) == -1) {
+                    _serrno = slurm_get_errno();
 #else
 				if(slurm_kill_job(fsd_atoi(self->job_id), SIGKILL, 0) == -1) {
+                    _serrno = slurm_get_errno();
 #endif
-					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_terminate_job error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+					fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_terminate_job error: %s,job_id: %s", slurm_strerror( _serrno ), self->job_id);
 				}
 				break;
 			default:
@@ -152,8 +177,13 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 
 	if (! (str_i = strchr( self->job_id, '_' ))) {
 		/* single job */
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+        int _slurm_errno;
+		if (( _slurm_errno = slurm_load_job( job_info, fsd_atoi( self->job_id ), SHOW_ALL)) != SLURM_SUCCESS ) {
+#else
 		if ( slurm_load_job( job_info, fsd_atoi( self->job_id ), SHOW_ALL) ) {
 			int _slurm_errno = slurm_get_errno();
+#endif
 
 			if (_slurm_errno == ESLURM_INVALID_JOB_ID) {
 				self->on_missing(self);
@@ -161,7 +191,7 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 				   _slurm_errno == SLURMCTLD_COMMUNICATIONS_CONNECTION_ERROR) {
 				fsd_exc_raise_fmt(FSD_ERRNO_DRM_COMMUNICATION_FAILURE, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(_slurm_errno), self->job_id);
 			} else {
-				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(_slurm_errno), self->job_id);
 			}
 		}
 
@@ -191,8 +221,13 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 
 		fsd_log_debug(( "looking for task (%u) of job (%s)", task_id, parent_job ));
 
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+        int _slurm_errno;
+		if (( _slurm_errno = slurm_load_job( job_info, fsd_atoi( parent_job ), SHOW_ALL)) != SLURM_SUCCESS ) {
+#else
 		if ( slurm_load_job( job_info, fsd_atoi( parent_job ), SHOW_ALL) ) {
 			int _slurm_errno = slurm_get_errno();
+#endif
 
 			if (_slurm_errno == ESLURM_INVALID_JOB_ID) {
 				self->on_missing(self);
@@ -201,7 +236,7 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 				   _slurm_errno == SLURMCTLD_COMMUNICATIONS_CONNECTION_ERROR) {
 				fsd_exc_raise_fmt(FSD_ERRNO_DRM_COMMUNICATION_FAILURE, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(_slurm_errno), self->job_id);
 			} else {
-				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(slurm_get_errno()), self->job_id);
+				fsd_exc_raise_fmt(FSD_ERRNO_INTERNAL_ERROR, "slurm_load_jobs error: %s,job_id: %s", slurm_strerror(_slurm_errno), self->job_id);
 			}
 		}
 
@@ -444,7 +479,11 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 	job_id_spec_t job_id_spec;
 	slurmdb_job_cond_t *job_cond = NULL;
 	slurmdb_job_rec_t *job = NULL;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+    list_t *jobs;
+#else
 	List jobs;
+#endif
 
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,5,0)
 	list_itr_t *itr = NULL;
