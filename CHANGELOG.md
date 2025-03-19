@@ -1,6 +1,30 @@
 Changelog
 =========
 
+1.1.5 (2025-03-19)
+------------------
+
+### New Features and Enhancements
+
+* List type was renamed in 24.05.X, and other minor patches ([PR #86][pr86]; thanks @sandynomad)
+* Compatibility changes for Slurm 24.11 ([PR #92][pr92]; thanks @sandynomad)
+* Test on Rocky 8 and bookworm, drop CentOS 7, bullseye, and unsupported Slurm versions ([PR #87][pr87])
+
+[pr92]: https://github.com/natefoo/slurm-drmaa/pull/92
+[pr86]: https://github.com/natefoo/slurm-drmaa/pull/86
+[pr87]: https://github.com/natefoo/slurm-drmaa/pull/87
+
+1.1.4 (2023-09-12)
+------------------
+
+### New Features and Enhancements
+
+- Slurm 23.02 support ([PR #79][pr79], thanks @sandynomad)
+- Test against Slurm 22.05 and 23.02 ([PR #82][pr82])
+
+[pr79]: https://github.com/natefoo/slurm-drmaa/pull/79
+[pr82]: https://github.com/natefoo/slurm-drmaa/pull/82
+
 1.1.3 (2021-10-07)
 ------------------
 
