@@ -92,7 +92,11 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 				/* change priority to 0*/
 				slurm_init_job_desc_msg(&job_desc);
 				slurm_self->old_priority = job_desc.priority;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(25,11,0)
+				job_desc.job_id_str = self->job_id;
+#else
 				job_desc.job_id = atoi(self->job_id);
+#endif
 				job_desc.priority = 0;
 				job_desc.alloc_sid = 0;
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
@@ -122,7 +126,11 @@ slurmdrmaa_job_control( fsd_job_t *self, int action )
 			  /* change priority back*/
 			  	slurm_init_job_desc_msg(&job_desc);
 				job_desc.priority = INFINITE;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(25,11,0)
+				job_desc.job_id_str = self->job_id;
+#else
 				job_desc.job_id = atoi(self->job_id);
+#endif
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
 				if((_serrno = slurm_update_job(&job_desc)) != SLURM_SUCCESS ) {
 #else
