@@ -1,5 +1,5 @@
-AC_INIT([DRMAA for Slurm], [m4_esyscmd_s(./m4/ac_version.sh)], [nate@bx.psu.edu], [slurm-drmaa])
-AC_PREREQ([2.69])
+AC_INIT([DRMAA for Slurm],[m4_esyscmd_s(./m4/ac_version.sh)],[nate@bx.psu.edu],[slurm-drmaa])
+AC_PREREQ([2.72])
 AC_REVISION([m4_esyscmd_s([git rev-parse HEAD])])
 AC_COPYRIGHT([
 DRMAA for Slurm
@@ -43,7 +43,6 @@ AC_ARG_ENABLE(development, AS_HELP_STRING([--enable-development],[enable develop
 
 # programs:
 AC_PROG_CC
-AC_PROG_CC_C99
 AC_PROG_CPP
 AC_PROG_INSTALL
 LT_INIT
@@ -51,9 +50,6 @@ AC_PROG_MAKE_SET
 AC_PROG_LN_S
 
 # check compiler / set basic flags:
-if test x$ac_cv_prog_cc_c99 = xno; then
-	AC_MSG_ERROR([C99 compiler is required])
-fi
 
 if test x$GCC = xyes; then
 	CFLAGS="-pedantic -std=c99 ${CFLAGS}"
@@ -121,8 +117,6 @@ fi
 CPPFLAGS="${CPPFLAGS} -DCONFDIR=${sysconfdir}"
 
 # headers:
-AC_HEADER_STDC
-AC_HEADER_TIME
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([stddef.h stdlib.h string.h strings.h sys/time.h unistd.h])
 
