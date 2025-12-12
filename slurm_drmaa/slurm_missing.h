@@ -25,14 +25,14 @@
 #define __LL_DRMAA__SLURM_MISSING_H
 
 #if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(24,11,0)
-extern void * slurm_list_peek (List l);
+extern void * slurm_list_peek(List l);
+extern int slurm_addto_step_list(List step_list, char *names);
+#else
+extern void * slurm_list_peek(list_t *l);
+extern int slurm_addto_step_list(list_t *step_list, char *names);
 #endif
 #if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(24,5,0)
-extern void * slurm_list_remove (ListIterator i);
-#endif
-
-#if SLURM_VERSION_NUMBER < SLURM_VERSION_NUM(24,11,0)
-extern int slurm_addto_step_list(List step_list, char *names);
+extern void * slurm_list_remove(ListIterator i);
 #endif
 
 /* --clusters is not supported with Slurm < 15.08, but these are defined to
