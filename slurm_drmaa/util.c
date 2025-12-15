@@ -691,7 +691,7 @@ void
 slurmdrmaa_set_cluster(const char * value)
 {
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
-    list_t *cluster_list = NULL;
+	list_t *volatile cluster_list = NULL;
 #else
 	volatile List cluster_list = NULL;
 #endif

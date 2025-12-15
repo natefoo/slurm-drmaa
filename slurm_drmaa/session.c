@@ -134,7 +134,7 @@ slurmdrmaa_session_run_bulk(
 		slurmdrmaa_job_create_req( self, jt, (fsd_environ_t**)&env , &job_desc );
 		int _slurm_errno;
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
-		if (_slurm_errno = slurm_submit_batch_job(&job_desc,&submit_response)) {
+		if ((_slurm_errno = slurm_submit_batch_job(&job_desc,&submit_response))) {
 #else
 		if (slurm_submit_batch_job(&job_desc,&submit_response)) {
 			_slurm_errno = slurm_get_errno();
