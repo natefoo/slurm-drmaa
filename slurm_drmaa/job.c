@@ -530,7 +530,22 @@ slurmdrmaa_job_on_missing( fsd_job_t *self )
 			job_cond->step_list = slurm_list_create(slurmdb_destroy_selected_step);
 #endif
 
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+			/* slurm_addto_step_list() was removed in SLURM 24.11.0+ */
+			{
+				slurm_selected_step_t *selected_step;
+				fsd_calloc(selected_step, 1, slurm_selected_step_t);
+				selected_step->array_bitmap = NULL;
+				selected_step->array_task_id = NO_VAL;
+				selected_step->het_job_offset = NO_VAL;
+				selected_step->step_id.job_id = atoi(self->job_id);
+				selected_step->step_id.step_id = NO_VAL;
+				selected_step->step_id.step_het_comp = NO_VAL;
+				slurm_list_append(job_cond->step_list, selected_step);
+			}
+#else
 			slurm_addto_step_list(job_cond->step_list, self->job_id);
+#endif
 			job_cond->usage_end = time(NULL);
 			acct_db_conn = slurmdb_connection_get(NULL);
 			jobs = slurmdb_jobs_get(acct_db_conn, job_cond);
