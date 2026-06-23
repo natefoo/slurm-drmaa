@@ -159,7 +159,7 @@ slurmdrmaa_session_run_bulk(
 		if ( start != 0 || end != 0 || incr != 0 ) {
 			int _serrno;
 #if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(26,5,0)
-			if (( _serrno = slurm_load_job_jid( job_info, fsd_atoi( self->job_id ), SHOW_ALL)) != SLURM_SUCCESS ) {
+			if (( _serrno = slurm_load_job_jid( &job_info, SUBMIT_RESPONSE_JOB_ID(submit_response), 0)) != SLURM_SUCCESS) {
 #elif SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
 			if (( _serrno = slurm_load_job( &job_info, SUBMIT_RESPONSE_JOB_ID(submit_response), 0)) != SLURM_SUCCESS) {
 #else
