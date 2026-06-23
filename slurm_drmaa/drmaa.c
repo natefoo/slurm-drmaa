@@ -95,7 +95,11 @@ slurmdrmaa_get_DRM_system( fsd_drmaa_singletone_t *self )
 		else
 		{
 			fsd_snprintf(NULL, slurmdrmaa_version, sizeof(slurmdrmaa_version)-1,"SLURM %s", conf_info_msg_ptr->version);
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(26,5,0)
+			slurm_free_conf (conf_info_msg_ptr);
+#else
 			slurm_free_ctl_conf (conf_info_msg_ptr);
+#endif
 		}
 	}
 	return slurmdrmaa_version;
