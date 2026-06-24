@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.1.6 (2026-06-24)
+------------------
+
+### New Features and Enhancements
+
+* Slurm 25.11 support ([PR #97][[pr97])
+* Slurm 26.05 support ([PR #102][[pr102], [PR #103][pr103]; thanks @lldelisle)
+
+[pr97]: https://github.com/natefoo/slurm-drmaa/pull/97
+[pr102]: https://github.com/natefoo/slurm-drmaa/pull/102
+[pr103]: https://github.com/natefoo/slurm-drmaa/pull/103
+
 1.1.5 (2025-03-19)
 ------------------
 
