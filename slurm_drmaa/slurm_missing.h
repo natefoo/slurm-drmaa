@@ -47,3 +47,14 @@ extern void slurmdb_destroy_cluster_rec(void *object);
 #endif
 
 #endif /* __SLURM_DRMAA__SLURM_MISSING_H */
+
+
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(26,5,0)
+inline static int slurm_load_job_jid(job_info_msg_t **resp, uint32_t job_id,
+				     uint16_t show_flags)
+{
+	slurm_step_id_t step_id = SLURM_STEP_ID_INITIALIZER;
+	step_id.job_id = job_id;
+	return slurm_load_job(resp, step_id, show_flags);
+}
+#endif

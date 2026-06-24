@@ -185,7 +185,10 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 
 	if (! (str_i = strchr( self->job_id, '_' ))) {
 		/* single job */
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(26,5,0)
+        int _slurm_errno;
+		if (( _slurm_errno = slurm_load_job_jid( job_info, fsd_atoi( self->job_id ), SHOW_ALL)) != SLURM_SUCCESS ) {
+#elif SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
         int _slurm_errno;
 		if (( _slurm_errno = slurm_load_job( job_info, fsd_atoi( self->job_id ), SHOW_ALL)) != SLURM_SUCCESS ) {
 #else
@@ -229,7 +232,10 @@ slurmdrmaa_find_job_info( fsd_job_t *self, job_info_msg_t **job_info ) {
 
 		fsd_log_debug(( "looking for task (%u) of job (%s)", task_id, parent_job ));
 
-#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(26,5,0)
+        int _slurm_errno;
+		if (( _slurm_errno = slurm_load_job_jid( job_info, fsd_atoi( self->job_id ), SHOW_ALL)) != SLURM_SUCCESS ) {
+#elif SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(24,11,0)
         int _slurm_errno;
 		if (( _slurm_errno = slurm_load_job( job_info, fsd_atoi( parent_job ), SHOW_ALL)) != SLURM_SUCCESS ) {
 #else
